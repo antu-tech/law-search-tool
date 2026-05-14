@@ -5,138 +5,450 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>卷宗搜尋系統</title>
 <style>
+  /* Apple Design Language */
   :root {
-    --bg: #f8f9fa;
-    --surface: #ffffff;
-    --primary: #1a365d;
-    --primary-light: #2c5282;
-    --accent: #2b6cb0;
-    --success: #22543d;
-    --success-bg: #c6f6d5;
-    --warning: #744210;
-    --warning-bg: #fefcbf;
-    --danger: #c53030;
-    --text: #1a202c;
-    --text-secondary: #4a5568;
-    --border: #e2e8f0;
-    --radius: 4px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --bg: #f5f5f7;
+    --sidebar-bg: #f5f5f7;
+    --surface: rgba(255, 255, 255, 0.72);
+    --surface-solid: #ffffff;
+    --primary: #0071e3;
+    --primary-hover: #0077ed;
+    --text: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #a1a1a6;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(0, 0, 0, 0.16);
+    --success: #34c759;
+    --warning: #ff9f0a;
+    --danger: #ff3b30;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 48px rgba(0,0,0,0.08);
   }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Noto Sans TC", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.47059;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+    -webkit-font-smoothing: antialiased;
   }
-  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Layout */
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar — macOS style */
   .sidebar {
-    background: var(--primary); color: #fff; padding: 24px 0;
-    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
   }
-  .sidebar-logo { font-size: 1.125rem; font-weight: 700; padding: 0 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+
+  .sidebar-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px 16px;
+  }
+
   .nav-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 24px;
-    cursor: pointer; font-size: 0.875rem; transition: background 0.15s; border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
   }
-  .nav-item:hover { background: rgba(255,255,255,0.06); }
-  .nav-item.active { background: rgba(255,255,255,0.1); border-left-color: var(--accent); }
-  .main { padding: 32px; max-width: 1200px; }
-  .page-header { margin-bottom: 24px; }
-  .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--primary); }
-  .page-header p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px; }
+
+  .nav-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .nav-item.active {
+    background: var(--surface-solid);
+    box-shadow: var(--shadow);
+    font-weight: 500;
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: var(--primary);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .nav-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+    opacity: 0.8;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Main */
+  .main {
+    padding: 32px 40px;
+    max-width: 1000px;
+  }
+
+  .top-bar {
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.021em;
+    color: var(--text);
+  }
+
+  .page-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* Glass Cards */
   .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.3s ease;
   }
+
+  .card:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .card.glass {
+    background: var(--surface);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
   .card-title {
-    font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-bottom: 16px;
-    text-transform: uppercase; letter-spacing: 0.025em;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
   }
-  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); }
+
+  /* Forms */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
   input, select, textarea {
-    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
-    font-size: 0.875rem; font-family: inherit; background: var(--surface); color: var(--text);
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--surface-solid);
+    color: var(--text);
+    transition: all 0.2s ease;
+    outline: none;
   }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+  }
+
+  input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  /* Buttons — Apple style */
   .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 8px 16px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500;
-    cursor: pointer; border: none; transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 980px; /* Apple pill shape */
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    letter-spacing: -0.01em;
   }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--primary-light); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-danger:hover { background: #9b2c2c; }
-  .btn-sm { padding: 6px 12px; font-size: 0.8125rem; }
-  .result-item { padding: 16px; border-bottom: 1px solid var(--border); }
-  .result-item:last-child { border-bottom: none; }
+
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background: var(--surface-solid);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--border-hover);
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .btn-sm {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  /* Results */
+  .result-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .result-item:first-child {
+    padding-top: 0;
+  }
+
   .tag {
-    display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius);
-    font-size: 0.75rem; font-weight: 500; margin-right: 6px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 980px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 6px;
+    letter-spacing: -0.01em;
   }
-  .tag-primary { background: #ebf8ff; color: var(--accent); }
-  .tag-success { background: var(--success-bg); color: var(--success); }
-  .tag-warning { background: var(--warning-bg); color: var(--warning); }
-  .tag-muted { background: #edf2f7; color: var(--text-secondary); }
-  .meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; }
-  .empty-state { text-align: center; padding: 48px; color: var(--text-secondary); }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+  .tag-blue { background: rgba(0, 113, 227, 0.1); color: var(--primary); }
+  .tag-green { background: rgba(52, 199, 89, 0.12); color: #1d7c34; }
+  .tag-orange { background: rgba(255, 159, 10, 0.12); color: #9a5c00; }
+  .tag-gray { background: rgba(0, 0, 0, 0.05); color: var(--text-secondary); }
+
+  .meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .meta a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  .meta a:hover {
+    text-decoration: underline;
+  }
+
+  /* Empty / Loading */
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* File Drop */
   .file-drop {
-    border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px;
-    text-align: center; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--surface-solid);
   }
-  .file-drop:hover, .file-drop.dragover { border-color: var(--accent); background: #ebf8ff; }
-  .page { display: none; }
-  .page.active { display: block; }
-  .results { margin-top: 16px; }
-  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 16px; }
+
+  .file-drop:hover, .file-drop.dragover {
+    border-color: var(--primary);
+    background: rgba(0, 113, 227, 0.03);
+  }
+
+  /* Hint text */
+  .hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  /* Pre / Code blocks */
   pre {
-    background: #f7fafc; border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px; font-size: 0.8125rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+    background: #f5f5f7;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-top: 8px;
+    font-family: "SF Mono", SFMono-Regular, ui-monospace, monospace;
   }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: end;
+    margin-bottom: 16px;
+  }
+
+  /* Responsive */
   @media (max-width: 768px) {
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .main { padding: 16px; }
+    .main { padding: 20px; }
+  }
+
+  /* Page switching */
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Results container */
+  .results { margin-top: 16px; }
+
+  /* Document list */
+  #docList { list-style: none; padding: 0; }
+  #docList .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
   }
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="sidebar-logo">卷宗搜尋系統</div>
+    <div class="sidebar-header">卷宗搜尋系統</div>
     <nav>
-      <div class="nav-item active" data-page="cases" onclick="showPage('cases')">📄 卷宗搜尋</div>
-      <div class="nav-item" data-page="regulations" onclick="showPage('regulations')">📚 法規查詢</div>
-      <div class="nav-item" data-page="judgments" onclick="showPage('judgments')">⚖️ 裁判書</div>
-      <div class="nav-item" data-page="constitutional" onclick="showPage('constitutional')">🏛️ 憲法法庭</div>
-      <div class="nav-item" data-page="ai-match" onclick="showPage('ai-match')">🤖 AI 條文匹配</div>
+      <div class="nav-item active" data-page="cases" onclick="showPage('cases')">
+        <span class="nav-icon">📄</span>
+        <span>卷宗搜尋</span>
+      </div>
+      <div class="nav-item" data-page="regulations" onclick="showPage('regulations')">
+        <span class="nav-icon">📚</span>
+        <span>法規查詢</span>
+      </div>
+      <div class="nav-item" data-page="judgments" onclick="showPage('judgments')">
+        <span class="nav-icon">⚖️</span>
+        <span>裁判書</span>
+      </div>
+      <div class="nav-item" data-page="constitutional" onclick="showPage('constitutional')">
+        <span class="nav-icon">🏛️</span>
+        <span>憲法法庭</span>
+      </div>
+      <div class="nav-item" data-page="ai-match" onclick="showPage('ai-match')">
+        <span class="nav-icon">🔮</span>
+        <span>AI 條文匹配</span>
+      </div>
     </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" data-page="settings" onclick="showPage('settings')">
+        <span class="nav-icon">⚙️</span>
+        <span>設定</span>
+      </div>
+    </div>
   </aside>
 
   <main class="main">
-    <!-- API Key -->
-    <div class="card">
-      <div class="form-grid">
-        <div class="form-group" style="grid-column:1 / -1;max-width:600px">
-          <label>API Key（OpenAI / Claude 兼容格式）</label>
-          <input type="password" id="apiKey" placeholder="sk-...">
-          <span class="meta">AI 語意搜尋與條文匹配需要。法規與裁判書查詢不需要。</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ====== Cases ====== -->
+    <!-- Page: Cases -->
     <div class="page active" id="page-cases">
-      <div class="page-header"><h1>卷宗搜尋</h1><p>上傳 PDF / Word 卷宗，進行語意或關鍵字搜尋</p></div>
+      <div class="top-bar">
+        <h1 class="page-title">卷宗搜尋</h1>
+        <p class="page-subtitle">上傳 PDF 或 Word 卷宗，進行語意或關鍵字搜尋</p>
+      </div>
 
       <div class="card">
         <div class="card-title">上傳卷宗</div>
         <div class="file-drop" id="dropZone">
-          <div>拖曳檔案至此，或 <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none"><a href="#" onclick="document.getElementById('fileInput').click();return false;">點擊選擇</a></div>
-          <div class="meta" id="uploadStatus"></div>
+          <div style="font-size:28px;margin-bottom:8px">⬆️</div>
+          <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
+          <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
+          <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
+          <div class="hint" id="uploadStatus"></div>
         </div>
       </div>
 
@@ -158,14 +470,17 @@
 
       <div class="card">
         <div class="card-title">已上傳卷宗</div>
-        <ul id="docList" style="list-style:none;padding:0"><li class="empty-state">尚無文件</li></ul>
-        <button class="btn btn-danger btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+        <ul id="docList"><li class="empty-state">尚無文件</li></ul>
+        <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
       </div>
     </div>
 
-    <!-- ====== Regulations ====== -->
+    <!-- Page: Regulations -->
     <div class="page" id="page-regulations">
-      <div class="page-header"><h1>法規查詢</h1><p>查詢全國法規資料庫（law.moj.gov.tw）11,700+ 部法規</p></div>
+      <div class="top-bar">
+        <h1 class="page-title">法規查詢</h1>
+        <p class="page-subtitle">全國法規資料庫（law.moj.gov.tw）11,700+ 部法規</p>
+      </div>
 
       <div class="card">
         <div class="card-title">單一條文查詢</div>
@@ -196,14 +511,17 @@
       </div>
     </div>
 
-    <!-- ====== Judgments ====== -->
+    <!-- Page: Judgments -->
     <div class="page" id="page-judgments">
-      <div class="page-header"><h1>裁判書</h1><p>司法院裁判書系統（judgment.judicial.gov.tw）</p></div>
+      <div class="top-bar">
+        <h1 class="page-title">裁判書</h1>
+        <p class="page-subtitle">司法院裁判書系統（judgment.judicial.gov.tw）</p>
+      </div>
 
       <div class="card">
         <div class="card-title">裁判書搜尋</div>
         <div class="form-grid">
-          <div class="form-group" style="flex:2"><label>關鍵字</label><input type="text" id="judKeyword" placeholder="預售屋 遲延交屋、借名登記..."></div>
+          <div class="form-group" style="grid-column:1 / -1"><label>關鍵字</label><input type="text" id="judKeyword" placeholder="預售屋 遲延交屋、借名登記..."></div>
           <div class="form-group"><label>法院</label><input type="text" id="judCourt" placeholder="最高法院、臺灣高等法院..."></div>
           <div class="form-group"><label>案件類型</label>
             <select id="judCaseType"><option value="">全部</option><option value="民事">民事</option><option value="刑事">刑事</option><option value="行政">行政</option><option value="懲戒">懲戒</option></select>
@@ -225,9 +543,12 @@
       </div>
     </div>
 
-    <!-- ====== Constitutional ====== -->
+    <!-- Page: Constitutional -->
     <div class="page" id="page-constitutional">
-      <div class="page-header"><h1>憲法法庭</h1><p>大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）</p></div>
+      <div class="top-bar">
+        <h1 class="page-title">憲法法庭</h1>
+        <p class="page-subtitle">大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）</p>
+      </div>
 
       <div class="card">
         <div class="card-title">釋字 / 憲判字查詢</div>
@@ -257,15 +578,34 @@
       </div>
     </div>
 
-    <!-- ====== AI Match ====== -->
+    <!-- Page: AI Match -->
     <div class="page" id="page-ai-match">
-      <div class="page-header"><h1>AI 條文匹配</h1><p>以 AI 分析問題並比對真實法規資料庫驗證</p></div>
+      <div class="top-bar">
+        <h1 class="page-title">AI 條文匹配</h1>
+        <p class="page-subtitle">以 AI 分析問題並比對真實法規資料庫驗證</p>
+      </div>
       <div class="card">
         <div class="toolbar">
           <div class="form-group" style="flex:1"><input type="text" id="aiQuery" placeholder="輸入法律問題，例如：預售屋遲延交屋的法律依據..."></div>
           <button class="btn btn-primary" onclick="matchLegal()">分析</button>
         </div>
         <div id="aiResult" class="results"></div>
+      </div>
+    </div>
+
+    <!-- Page: Settings -->
+    <div class="page" id="page-settings">
+      <div class="top-bar">
+        <h1 class="page-title">設定</h1>
+        <p class="page-subtitle">API 與系統設定</p>
+      </div>
+      <div class="card glass">
+        <div class="card-title">API Key</div>
+        <div class="form-group" style="max-width:480px">
+          <label>OpenAI / Claude 兼容 API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-...">
+          <div class="hint">AI 語意搜尋與條文匹配功能需要此金鑰。法規與裁判書查詢不需要。</div>
+        </div>
       </div>
     </div>
   </main>
@@ -280,14 +620,31 @@ function showPage(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   $('page-' + name).classList.add('active');
   document.querySelector('.nav-item[data-page="' + name + '"]').classList.add('active');
+  // Update page title in top bar
+  const titles = {
+    cases: ['卷宗搜尋','上傳 PDF 或 Word 卷宗，進行語意或關鍵字搜尋'],
+    regulations: ['法規查詢','全國法規資料庫（law.moj.gov.tw）11,700+ 部法規'],
+    judgments: ['裁判書','司法院裁判書系統（judgment.judicial.gov.tw）'],
+    constitutional: ['憲法法庭','大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）'],
+    'ai-match': ['AI 條文匹配','以 AI 分析問題並比對真實法規資料庫驗證'],
+    settings: ['設定','API 與系統設定']
+  };
+  const t = titles[name];
+  if(t) {
+    const activePage = document.querySelector('.page.active');
+    const header = activePage.querySelector('.top-bar');
+    if(header) {
+      header.querySelector('.page-title').textContent = t[0];
+      header.querySelector('.page-subtitle').textContent = t[1];
+    }
+  }
 }
 
 function setStatus(id, msg, err=false) {
   const el = $(id);
-  if (!el) return;
+  if(!el) return;
   el.innerHTML = msg ? `<span style="color:${err?'var(--danger)':'var(--success)'}">${msg}</span>` : '';
 }
-
 function loading(id) { $(id).innerHTML = '<div class="empty-state"><span class="spinner"></span> 載入中...</div>'; }
 
 // ---------- Upload & Case Search ----------
@@ -299,7 +656,7 @@ dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag
 
 async function upload(file) {
   if(!file) return;
-  if(!apiKey()) { alert('請先輸入 API Key'); return; }
+  if(!apiKey()) { showPage('settings'); setTimeout(()=>alert('請先在「設定」中輸入 API Key'),300); return; }
   setStatus('uploadStatus', '上傳中...');
   const fd = new FormData(); fd.append('file', file);
   try {
@@ -316,7 +673,7 @@ async function loadDocs() {
   const docs = await r.json();
   const ul = $('docList');
   if(!docs.length) { ul.innerHTML='<li class="empty-state">尚無文件</li>'; return; }
-  ul.innerHTML = docs.map(d => `<li class="result-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(d.title)}</span><button class="btn btn-danger btn-sm" onclick="delDoc('${d.id}')">刪除</button></li>`).join('');
+  ul.innerHTML = docs.map(d => `<li class="result-item"><span>${escapeHtml(d.title)}</span><button class="btn btn-secondary btn-sm" onclick="delDoc('${d.id}')">刪除</button></li>`).join('');
 }
 
 async function delDoc(id) { await fetch(`/api/documents/${id}`, {method:'DELETE'}); loadDocs(); }
@@ -332,13 +689,14 @@ async function doSearch() {
   const mode = $('mode').value;
   loading('searchResults');
   const headers = mode==='keyword' ? {} : {'X-Api-Key': apiKey()};
+  if(mode!=='keyword' && !apiKey()) { showPage('settings'); setTimeout(()=>alert('請先在「設定」中輸入 API Key'),300); return; }
   try {
     const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&top_k=5`, {headers});
     const j = await r.json();
     if(!j.results || !j.results.length) { $('searchResults').innerHTML='<div class="empty-state">無結果</div>'; return; }
     $('searchResults').innerHTML = j.results.map(x => `<div class="result-item">
-      <div><span class="tag tag-muted">${escapeHtml(x.title)}</span><span class="tag tag-primary">分數 ${x.score}</span></div>
-      <div style="margin-top:8px;white-space:pre-wrap;font-size:0.875rem">${escapeHtml(x.text)}</div>
+      <div><span class="tag tag-gray">${escapeHtml(x.title)}</span><span class="tag tag-blue">分數 ${x.score}</span></div>
+      <div style="margin-top:8px;white-space:pre-wrap;font-size:14px;color:var(--text-secondary)">${escapeHtml(x.text)}</div>
       ${x.page_start?`<div class="meta">頁碼: ${x.page_start}${x.page_end!==x.page_start?'-'+x.page_end:''}</div>`:''}
     </div>`).join('');
   } catch(e) { $('searchResults').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
@@ -352,8 +710,8 @@ async function queryRegulation() {
     const r = await fetch('/api/legal/query-regulation', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({law_name:law, article_no:art})});
     const j = await r.json();
     if(!j.success) { $('regResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
-    let html = `<div class="result-item"><div><span class="tag tag-primary">${escapeHtml(j.law.name)}</span><span class="tag tag-muted">${escapeHtml(j.law.pcode)}</span></div>`;
-    if(j.articles) html += j.articles.map(a => `<div style="margin-top:10px"><strong>第 ${escapeHtml(a.number)} 條</strong><div style="white-space:pre-wrap;margin-top:4px">${escapeHtml(a.content)}</div></div>`).join('');
+    let html = `<div class="result-item"><div><span class="tag tag-blue">${escapeHtml(j.law.name)}</span><span class="tag tag-gray">${escapeHtml(j.law.pcode)}</span></div>`;
+    if(j.articles) html += j.articles.map(a => `<div style="margin-top:12px"><strong style="font-size:14px">第 ${escapeHtml(a.number)} 條</strong><div style="white-space:pre-wrap;margin-top:6px;font-size:14px;color:var(--text-secondary)">${escapeHtml(a.content)}</div></div>`).join('');
     if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
     html += '</div>';
     $('regResult').innerHTML = html;
@@ -367,9 +725,9 @@ async function searchRegulations() {
     const j = await r.json();
     if(!j.success || !j.results.length) { $('regSearchResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
     $('regSearchResult').innerHTML = j.results.map(x => `<div class="result-item">
-      <span class="tag ${x.status==='現行法規'?'tag-success':'tag-warning'}">${x.status}</span>
-      <span style="font-weight:500">${escapeHtml(x.law_name)}</span>
-      <span class="tag tag-muted">${x.pcode}</span>
+      <span class="tag ${x.status==='現行法規'?'tag-green':'tag-orange'}">${x.status}</span>
+      <span style="font-weight:500;font-size:14px">${escapeHtml(x.law_name)}</span>
+      <span class="tag tag-gray">${x.pcode}</span>
     </div>`).join('');
   } catch(e) { $('regSearchResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
@@ -381,9 +739,9 @@ async function getPcode() {
     const j = await r.json();
     if(!j.success) { $('pcodeResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
     $('pcodeResult').innerHTML = `<div class="result-item">
-      <span class="tag tag-success">${j.status}</span>
-      <strong>${escapeHtml(j.law_name)}</strong>
-      <span class="tag tag-primary">${j.pcode}</span>
+      <span class="tag tag-green">${j.status}</span>
+      <strong style="font-size:14px">${escapeHtml(j.law_name)}</strong>
+      <span class="tag tag-blue">${j.pcode}</span>
       ${j.matched_from?`<span class="meta">（從「${escapeHtml(j.matched_from)}」匹配）</span>`:''}
     </div>`;
   } catch(e) { $('pcodeResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
@@ -399,10 +757,10 @@ async function searchJudgments() {
     const j = await r.json();
     if(!j.success || !j.results.length) { $('judResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
     $('judResult').innerHTML = j.results.map(x => `<div class="result-item">
-      <div><span class="tag tag-muted">${escapeHtml(x.court)}</span><span class="tag tag-primary">${escapeHtml(x.case_type)}</span><span class="tag tag-muted">${escapeHtml(x.date)}</span></div>
-      <div style="margin-top:6px;font-weight:500">${escapeHtml(x.title)}</div>
+      <div><span class="tag tag-gray">${escapeHtml(x.court)}</span><span class="tag tag-blue">${escapeHtml(x.case_type)}</span><span class="tag tag-gray">${escapeHtml(x.date)}</span></div>
+      <div style="margin-top:6px;font-weight:500;font-size:14px">${escapeHtml(x.title)}</div>
       <div class="meta">${escapeHtml(x.case_id)}</div>
-      <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="getJudgmentById('${escapeHtml(x.case_id)}')">取得全文</button>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="getJudgmentById('${escapeHtml(x.case_id)}')">取得全文</button>
     </div>`).join('');
   } catch(e) { $('judResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
@@ -416,10 +774,10 @@ async function getJudgment() {
     const j = await r.json();
     if(!j.success) { $('judFullResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
     let html = `<div class="result-item">
-      <div><span class="tag tag-muted">${escapeHtml(j.court)}</span><span class="tag tag-primary">${escapeHtml(j.date)}</span></div>
-      <div style="margin-top:10px"><strong>主文</strong><pre>${escapeHtml(j.main_text)}</pre></div>`;
-    if(j.facts) html += `<div style="margin-top:10px"><strong>事實</strong><pre>${escapeHtml(j.facts)}</pre></div>`;
-    if(j.reasoning) html += `<div style="margin-top:10px"><strong>理由</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
+      <div><span class="tag tag-gray">${escapeHtml(j.court)}</span><span class="tag tag-blue">${escapeHtml(j.date)}</span></div>
+      <div style="margin-top:12px"><strong style="font-size:14px">主文</strong><pre>${escapeHtml(j.main_text)}</pre></div>`;
+    if(j.facts) html += `<div style="margin-top:12px"><strong style="font-size:14px">事實</strong><pre>${escapeHtml(j.facts)}</pre></div>`;
+    if(j.reasoning) html += `<div style="margin-top:12px"><strong style="font-size:14px">理由</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
     if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
     html += '</div>';
     $('judFullResult').innerHTML = html;
@@ -434,10 +792,10 @@ async function getInterpretation() {
     const j = await r.json();
     if(!j.success) { $('ccResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
     let html = `<div class="result-item">
-      <div><span class="tag tag-primary">${escapeHtml(j.case_id)}</span><span class="tag tag-muted">${escapeHtml(j.date)}</span></div>
-      <div style="margin-top:10px"><strong>爭點</strong><div>${escapeHtml(j.issue)}</div></div>
-      <div style="margin-top:10px"><strong>解釋文</strong><pre>${escapeHtml(j.holding)}</pre></div>`;
-    if(j.reasoning) html += `<div style="margin-top:10px"><strong>理由書</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
+      <div><span class="tag tag-blue">${escapeHtml(j.case_id)}</span><span class="tag tag-gray">${escapeHtml(j.date)}</span></div>
+      <div style="margin-top:12px"><strong style="font-size:14px">爭點</strong><div style="font-size:14px;color:var(--text-secondary);margin-top:4px">${escapeHtml(j.issue)}</div></div>
+      <div style="margin-top:12px"><strong style="font-size:14px">解釋文</strong><pre>${escapeHtml(j.holding)}</pre></div>`;
+    if(j.reasoning) html += `<div style="margin-top:12px"><strong style="font-size:14px">理由書</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
     if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
     html += '</div>';
     $('ccResult').innerHTML = html;
@@ -451,12 +809,14 @@ async function searchInterpretations() {
     const j = await r.json();
     if(!j.success || !j.results.length) { $('ccSearchResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
     $('ccSearchResult').innerHTML = j.results.map(x => `<div class="result-item">
-      <div><span class="tag tag-primary">${escapeHtml(x.case_id)}</span><span class="tag tag-muted">${escapeHtml(x.date)}</span></div>
-      <div style="margin-top:6px;font-weight:500">${escapeHtml(x.issue)}</div>
-      <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="$('ccCaseId').value='${escapeHtml(x.case_id)}';getInterpretation();showPage('constitutional')">查看全文</button>
+      <div><span class="tag tag-blue">${escapeHtml(x.case_id)}</span><span class="tag tag-gray">${escapeHtml(x.date)}</span></div>
+      <div style="margin-top:6px;font-weight:500;font-size:14px">${escapeHtml(x.issue)}</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="getInterpById('${escapeHtml(x.case_id)}')">查看全文</button>
     </div>`).join('');
   } catch(e) { $('ccSearchResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
+
+async function getInterpById(id) { $('ccCaseId').value = id; getInterpretation(); showPage('constitutional'); }
 
 async function getCitations() {
   const id = $('ccCiteId').value.trim(); if(!id) return; loading('ccCiteResult');
@@ -465,7 +825,7 @@ async function getCitations() {
     const j = await r.json();
     if(!j.success || !j.citations.length) { $('ccCiteResult').innerHTML='<div class="empty-state">無引用關係</div>'; return; }
     $('ccCiteResult').innerHTML = j.citations.map(x => `<div class="result-item">
-      <span class="tag tag-primary">${escapeHtml(x)}</span>
+      <span class="tag tag-blue">${escapeHtml(x)}</span>
     </div>`).join('');
   } catch(e) { $('ccCiteResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
@@ -473,7 +833,7 @@ async function getCitations() {
 // ---------- AI Match ----------
 async function matchLegal() {
   const q = $('aiQuery').value.trim(); if(!q) return;
-  if(!apiKey()) { alert('請先輸入 API Key'); return; }
+  if(!apiKey()) { showPage('settings'); setTimeout(()=>alert('請先在「設定」中輸入 API Key'),300); return; }
   loading('aiResult');
   try {
     const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Api-Key': apiKey()}});
@@ -481,12 +841,12 @@ async function matchLegal() {
     if(!j.articles || !j.articles.length) { $('aiResult').innerHTML='<div class="empty-state">無匹配條文</div>'; return; }
     $('aiResult').innerHTML = j.articles.map(a => `<div class="result-item">
       <div>
-        <span class="tag tag-primary">${escapeHtml(a.law)}</span>
-        <span class="tag tag-muted">第 ${escapeHtml(a.article)} 條</span>
-        <span class="tag ${a.verified?'tag-success':'tag-warning'}">${a.verified?'✅ 已驗證':'⚠️ 未驗證'}</span>
+        <span class="tag tag-blue">${escapeHtml(a.law)}</span>
+        <span class="tag tag-gray">第 ${escapeHtml(a.article)} 條</span>
+        <span class="tag ${a.verified?'tag-green':'tag-orange'}">${a.verified?'✓ 已驗證':'未驗證'}</span>
       </div>
-      ${a.text?`<div style="margin-top:8px;white-space:pre-wrap;font-size:0.875rem">${escapeHtml(a.text)}</div>`:''}
-      <div style="margin-top:6px;font-size:0.875rem;color:var(--text-secondary)">${escapeHtml(a.reason)}</div>
+      ${a.text?`<div style="margin-top:10px;white-space:pre-wrap;font-size:14px;color:var(--text-secondary)">${escapeHtml(a.text)}</div>`:''}
+      <div style="margin-top:6px;font-size:13px;color:var(--text-secondary)">${escapeHtml(a.reason)}</div>
       ${a.source_url?`<div class="meta"><a href="${a.source_url}" target="_blank">來源：${a.source_url}</a></div>`:''}
     </div>`).join('');
   } catch(e) { $('aiResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
