@@ -156,8 +156,14 @@ async function matchLegal() {
   const j = await r.json();
   if(!j.articles || !j.articles.length) { div.innerHTML='<div class="empty">無匹配條文</div>'; return; }
   div.innerHTML = j.articles.map(a => `<div class="result-item">
-    <div><span class="tag">${a.law}</span> <span class="tag">第 ${a.article} 條</span></div>
+    <div>
+      <span class="tag">${a.law}</span>
+      <span class="tag">第 ${a.article} 條</span>
+      <span class="tag" style="background:${a.verified?'#d4edda':'#fff3cd'};color:${a.verified?'#155724':'#856404'};">${a.verified?'✅ 已驗證':'⚠️ 未驗證'}</span>
+    </div>
+    ${a.text?`<div style="margin-top:6px;white-space:pre-wrap;">${escapeHtml(a.text)}</div>`:''}
     <div style="margin-top:6px;">${escapeHtml(a.reason)}</div>
+    ${a.source_url?`<div class="meta"><a href="${a.source_url}" target="_blank">來源：${a.source_url}</a></div>`:''}
   </div>`).join('');
 }
 

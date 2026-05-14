@@ -12,6 +12,7 @@ from src.infrastructure.vector_index import VectorIndex
 from src.application.parsing_service import ParsingService
 from src.application.search_service import SearchService, SearchResult
 from src.application.llm_service import LLMService
+from src.infrastructure.legal_db_client import LegalDBClient
 
 DB_PATH = os.getenv("SQLITE_PATH", "data/law_search.db")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
@@ -126,4 +127,5 @@ async def legal_articles(
     x_api_key: Optional[str] = Header(None, alias="X-Api-Key"),
 ):
     llm = _llm(x_api_key)
-    return await search.match_legal_articles(q, llm)
+    legal_db = LegalDBClient()
+    return await search.match_legal_articles(q, llm, legal_db)

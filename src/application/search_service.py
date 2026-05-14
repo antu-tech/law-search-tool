@@ -6,6 +6,7 @@ from src.domain.document import Document
 from src.infrastructure.db import Database
 from src.infrastructure.vector_index import VectorIndex
 from src.application.llm_service import LLMService
+from src.infrastructure.legal_db_client import LegalDBClient
 
 
 class SearchResult:
@@ -97,24 +98,70 @@ class SearchService:
             ))
         return sorted(out, key=lambda x: x.score, reverse=True)
 
-    async def match_legal_articles(self, query: str, llm: LLMService) -> dict:
+    async def match_legal_articles(self, query: str, llm: LLMService, legal_db: LegalDBClient) -> dict:
+        # Step 1: Use LLM to extract candidate law names & article numbers
         system_msg = (
-            "你是一位台灣法律專家。請從使用者的問題中，找出最相關的法律名稱與條文編號，"
-            "並簡要說明適用理由。請以 JSON 格式回應："
+            "你是一位台灣法律專家。請從使用者的問題中，找出最相關的法律名稱與條文編號。"
+            "請只回傳 JSON，不要其他說明："
             '{"articles": [{"law": "法律名稱", "article": "條號", "reason": "適用理由"}]}'
         )
         content = await llm.chat([
             {"role": "system", "content": system_msg},
             {"role": "user", "content": query},
         ])
-        # extract JSON if wrapped in markdown
         m = re.search(r"```json\s*(.*?)\s*```", content, re.S)
         if m:
             content = m.group(1)
         try:
-            return json.loads(content)
+            parsed = json.loads(content)
         except Exception:
             return {"articles": [], "raw": content}
+
+        # Step 2: Verify each candidate against the real legal database
+        verified = []
+        for item in parsed.get("articles", []):
+            law_name = item.get("law", "")
+            article_no = item.get("article", "")
+            if not law_name or not article_no:
+                continue
+            try:
+                result = await legal_db.query_regulation(
+                    law_name=law_name, article_no=article_no
+                )
+                if result.get("success"):
+                    articles = result.get("articles", [])
+                    text = articles[0].get("content", "") if articles else ""
+                    source_url = result.get("source_url", "")
+                    verified.append({
+                        "law": law_name,
+                        "article": article_no,
+                        "reason": item.get("reason", ""),
+                        "text": text,
+                        "source_url": source_url,
+                        "verified": True,
+                    })
+                else:
+                    verified.append({
+                        "law": law_name,
+                        "article": article_no,
+                        "reason": item.get("reason", ""),
+                        "text": "",
+                        "source_url": "",
+                        "verified": False,
+                        "error": result.get("error", "查無此法條"),
+                    })
+            except Exception as e:
+                verified.append({
+                    "law": law_name,
+                    "article": article_no,
+                    "reason": item.get("reason", ""),
+                    "text": "",
+                    "source_url": "",
+                    "verified": False,
+                    "error": str(e),
+                })
+
+        return {"articles": verified}
 
     def load_index_from_db(self):
         rows = self.db.get_all_vectors()
