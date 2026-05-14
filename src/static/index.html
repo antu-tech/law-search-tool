@@ -427,8 +427,8 @@
     color: #fff;
     box-shadow: 0 1px 4px rgba(0,0,0,0.1);
   }
-  .cc-panel { display: none; }
-  .cc-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
 
   /* Document list */
   #docList { list-style: none; padding: 0; }
@@ -482,37 +482,42 @@
         <p class="page-subtitle">上傳 PDF 或 Word 卷宗，進行語意或關鍵字搜尋</p>
       </div>
 
-      <div class="card">
-        <div class="card-title">上傳卷宗</div>
-        <div class="file-drop" id="dropZone">
-          <div style="font-size:32px;margin-bottom:8px"><span class="material-icons-round" style="font-size:32px;color:var(--primary)">upload_file</span></div>
-          <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
-          <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
-          <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
-          <div class="hint" id="uploadStatus"></div>
-        </div>
+      <div class="tab-bar">
+        <button class="tab active" data-tab="cases-upload" onclick="showTab('cases','upload')">上傳卷宗</button>
+        <button class="tab" data-tab="cases-search" onclick="showTab('cases','search')">搜尋</button>
+        <button class="tab" data-tab="cases-docs" onclick="showTab('cases','docs')">已上傳卷宗</button>
       </div>
 
       <div class="card">
-        <div class="card-title">搜尋</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:3"><input type="text" id="query" placeholder="輸入關鍵字或法律問題..."></div>
-          <div class="form-group" style="flex:1">
-            <select id="mode">
-              <option value="semantic">語意搜尋</option>
-              <option value="keyword">關鍵字</option>
-              <option value="hybrid">混合</option>
-            </select>
+        <div class="tab-panel active" id="cases-panel-upload">
+          <div class="file-drop" id="dropZone">
+            <div style="font-size:32px;margin-bottom:8px"><span class="material-icons-round" style="font-size:32px;color:var(--primary)">upload_file</span></div>
+            <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
+            <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
+            <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
+            <div class="hint" id="uploadStatus"></div>
           </div>
-          <button class="btn btn-primary" onclick="doSearch()">搜尋</button>
         </div>
-        <div id="searchResults" class="results"></div>
-      </div>
 
-      <div class="card">
-        <div class="card-title">已上傳卷宗</div>
-        <ul id="docList"><li class="empty-state">尚無文件</li></ul>
-        <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+        <div class="tab-panel" id="cases-panel-search">
+          <div class="toolbar">
+            <div class="form-group" style="flex:3"><input type="text" id="query" placeholder="輸入關鍵字或法律問題..." onkeydown="if(event.key==='Enter')doSearch()"></div>
+            <div class="form-group" style="flex:1">
+              <select id="mode">
+                <option value="semantic">語意搜尋</option>
+                <option value="keyword">關鍵字</option>
+                <option value="hybrid">混合</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="doSearch()">搜尋</button>
+          </div>
+          <div id="searchResults" class="results"></div>
+        </div>
+
+        <div class="tab-panel" id="cases-panel-docs">
+          <ul id="docList"><li class="empty-state">尚無文件</li></ul>
+          <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+        </div>
       </div>
     </div>
 
@@ -523,32 +528,37 @@
         <p class="page-subtitle">全國法規資料庫（law.moj.gov.tw）11,700+ 部法規</p>
       </div>
 
-      <div class="card">
-        <div class="card-title">單一條文查詢</div>
-        <div class="form-grid">
-          <div class="form-group"><label>法規名稱</label><input type="text" id="regLawName" placeholder="民法、勞動基準法..."></div>
-          <div class="form-group"><label>條號</label><input type="text" id="regArticle" placeholder="184、247-1..."></div>
-          <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="queryRegulation()">查詢</button></div>
-        </div>
-        <div id="regResult" class="results"></div>
+      <div class="tab-bar">
+        <button class="tab active" data-tab="reg-article" onclick="showTab('regulations','article')">單一條文查詢</button>
+        <button class="tab" data-tab="reg-search" onclick="showTab('regulations','search')">法規名稱搜尋</button>
+        <button class="tab" data-tab="reg-pcode" onclick="showTab('regulations','pcode')">Pcode 查詢</button>
       </div>
 
       <div class="card">
-        <div class="card-title">法規名稱搜尋</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="regKeyword" placeholder="勞動、消費、智慧財產..."></div>
-          <button class="btn btn-primary" onclick="searchRegulations()">搜尋</button>
+        <div class="tab-panel active" id="regulations-panel-article">
+          <div class="form-grid">
+            <div class="form-group"><label>法規名稱</label><input type="text" id="regLawName" placeholder="民法、勞動基準法..." onkeydown="if(event.key==='Enter')queryRegulation()"></div>
+            <div class="form-group"><label>條號</label><input type="text" id="regArticle" placeholder="184、247-1..." onkeydown="if(event.key==='Enter')queryRegulation()"></div>
+            <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="queryRegulation()">查詢</button></div>
+          </div>
+          <div id="regResult" class="results"></div>
         </div>
-        <div id="regSearchResult" class="results"></div>
-      </div>
 
-      <div class="card">
-        <div class="card-title">Pcode 查詢</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="pcodeInput" placeholder="民法、律師法..."></div>
-          <button class="btn btn-primary" onclick="getPcode()">查詢</button>
+        <div class="tab-panel" id="regulations-panel-search">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="regKeyword" placeholder="勞動、消費、智慧財產..." onkeydown="if(event.key==='Enter')searchRegulations()"></div>
+            <button class="btn btn-primary" onclick="searchRegulations()">搜尋</button>
+          </div>
+          <div id="regSearchResult" class="results"></div>
         </div>
-        <div id="pcodeResult" class="results"></div>
+
+        <div class="tab-panel" id="regulations-panel-pcode">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="pcodeInput" placeholder="民法、律師法..." onkeydown="if(event.key==='Enter')getPcode()"></div>
+            <button class="btn btn-primary" onclick="getPcode()">查詢</button>
+          </div>
+          <div id="pcodeResult" class="results"></div>
+        </div>
       </div>
     </div>
 
@@ -559,28 +569,33 @@
         <p class="page-subtitle">司法院裁判書系統（judgment.judicial.gov.tw）</p>
       </div>
 
-      <div class="card">
-        <div class="card-title">裁判書搜尋</div>
-        <div class="form-grid">
-          <div class="form-group" style="grid-column:1 / -1"><label>關鍵字</label><input type="text" id="judKeyword" placeholder="預售屋 遲延交屋、借名登記..."></div>
-          <div class="form-group"><label>法院</label><input type="text" id="judCourt" placeholder="最高法院、臺灣高等法院..."></div>
-          <div class="form-group"><label>案件類型</label>
-            <select id="judCaseType"><option value="">全部</option><option value="民事">民事</option><option value="刑事">刑事</option><option value="行政">行政</option><option value="懲戒">懲戒</option></select>
-          </div>
-          <div class="form-group"><label>年度起</label><input type="number" id="judYearFrom" placeholder="110"></div>
-          <div class="form-group"><label>年度迄</label><input type="number" id="judYearTo" placeholder="114"></div>
-          <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="searchJudgments()">搜尋</button></div>
-        </div>
-        <div id="judResult" class="results"></div>
+      <div class="tab-bar">
+        <button class="tab active" data-tab="jud-search" onclick="showTab('judgments','search')">裁判書搜尋</button>
+        <button class="tab" data-tab="jud-full" onclick="showTab('judgments','full')">裁判全文取得</button>
       </div>
 
       <div class="card">
-        <div class="card-title">裁判全文取得</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="judJid" placeholder="JID（從搜尋結果複製）"></div>
-          <button class="btn btn-primary" onclick="getJudgment()">取得全文</button>
+        <div class="tab-panel active" id="judgments-panel-search">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column:1 / -1"><label>關鍵字</label><input type="text" id="judKeyword" placeholder="預售屋 遲延交屋、借名登記..." onkeydown="if(event.key==='Enter')searchJudgments()"></div>
+            <div class="form-group"><label>法院</label><input type="text" id="judCourt" placeholder="最高法院、臺灣高等法院..."></div>
+            <div class="form-group"><label>案件類型</label>
+              <select id="judCaseType"><option value="">全部</option><option value="民事">民事</option><option value="刑事">刑事</option><option value="行政">行政</option><option value="懲戒">懲戒</option></select>
+            </div>
+            <div class="form-group"><label>年度起</label><input type="number" id="judYearFrom" placeholder="110"></div>
+            <div class="form-group"><label>年度迄</label><input type="number" id="judYearTo" placeholder="114"></div>
+            <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="searchJudgments()">搜尋</button></div>
+          </div>
+          <div id="judResult" class="results"></div>
         </div>
-        <div id="judFullResult" class="results"></div>
+
+        <div class="tab-panel" id="judgments-panel-full">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="judJid" placeholder="JID（從搜尋結果複製）" onkeydown="if(event.key==='Enter')getJudgment()"></div>
+            <button class="btn btn-primary" onclick="getJudgment()">取得全文</button>
+          </div>
+          <div id="judFullResult" class="results"></div>
+        </div>
       </div>
     </div>
 
@@ -592,14 +607,13 @@
       </div>
 
       <div class="tab-bar">
-        <button class="tab active" data-cc-tab="lookup" onclick="showCcTab('lookup')">釋字 / 憲判字查詢</button>
-        <button class="tab" data-cc-tab="search" onclick="showCcTab('search')">全文搜尋</button>
-        <button class="tab" data-cc-tab="citations" onclick="showCcTab('citations')">引用關係圖譜</button>
+        <button class="tab active" data-tab="constitutional-lookup" onclick="showTab('constitutional','lookup')">釋字 / 憲判字查詢</button>
+        <button class="tab" data-tab="constitutional-search" onclick="showTab('constitutional','search')">全文搜尋</button>
+        <button class="tab" data-tab="constitutional-citations" onclick="showTab('constitutional','citations')">引用關係圖譜</button>
       </div>
 
       <div class="card">
-        <!-- Tab: Lookup -->
-        <div class="cc-panel active" id="cc-panel-lookup">
+        <div class="tab-panel active" id="constitutional-panel-lookup">
           <div class="toolbar">
             <div class="form-group" style="flex:1"><input type="text" id="ccCaseId" placeholder="釋字748、111年憲判字第1號..." onkeydown="if(event.key==='Enter')getInterpretation()"></div>
             <button class="btn btn-primary" onclick="getInterpretation()">查詢</button>
@@ -607,8 +621,7 @@
           <div id="ccResult" class="results"></div>
         </div>
 
-        <!-- Tab: Search -->
-        <div class="cc-panel" id="cc-panel-search">
+        <div class="tab-panel" id="constitutional-panel-search">
           <div class="toolbar">
             <div class="form-group" style="flex:1"><input type="text" id="ccKeyword" placeholder="集會自由、言論自由、婚姻自由..." onkeydown="if(event.key==='Enter')searchInterpretations()"></div>
             <button class="btn btn-primary" onclick="searchInterpretations()">搜尋</button>
@@ -616,8 +629,7 @@
           <div id="ccSearchResult" class="results"></div>
         </div>
 
-        <!-- Tab: Citations -->
-        <div class="cc-panel" id="cc-panel-citations">
+        <div class="tab-panel" id="constitutional-panel-citations">
           <div class="toolbar">
             <div class="form-group" style="flex:1"><input type="text" id="ccCiteId" placeholder="釋字748..." onkeydown="if(event.key==='Enter')getCitations()"></div>
             <button class="btn btn-primary" onclick="getCitations()">查詢</button>
@@ -830,7 +842,7 @@ async function searchJudgments() {
   } catch(e) { $('judResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
-async function getJudgmentById(jid) { $('judJid').value = jid; getJudgment(); showPage('judgments'); }
+async function getJudgmentById(jid) { $('judJid').value = jid; showPage('judgments'); showTab('judgments','full'); getJudgment(); }
 
 async function getJudgment() {
   const jid = $('judJid').value.trim(); if(!jid) return; loading('judFullResult');
@@ -849,11 +861,12 @@ async function getJudgment() {
   } catch(e) { $('judFullResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
-function showCcTab(name) {
-  document.querySelectorAll('.cc-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
-  $('cc-panel-' + name).classList.add('active');
-  document.querySelector('.tab-bar .tab[data-cc-tab="' + name + '"]').classList.add('active');
+function showTab(page, name) {
+  const pageEl = $('page-' + page);
+  pageEl.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  pageEl.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+  $('page-' + page).querySelector('#' + page + '-panel-' + name).classList.add('active');
+  pageEl.querySelector('.tab-bar .tab[data-tab="' + page + '-' + name + '"]').classList.add('active');
 }
 
 // ---------- Constitutional Court ----------
@@ -888,7 +901,7 @@ async function searchInterpretations() {
   } catch(e) { $('ccSearchResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
-async function getInterpById(id) { $('ccCaseId').value = id; getInterpretation(); showPage('constitutional'); }
+async function getInterpById(id) { $('ccCaseId').value = id; showPage('constitutional'); showTab('constitutional','lookup'); getInterpretation(); }
 
 async function getCitations() {
   const id = $('ccCiteId').value.trim(); if(!id) return; loading('ccCiteResult');
