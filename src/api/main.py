@@ -129,3 +129,90 @@ async def legal_articles(
     llm = _llm(x_api_key)
     legal_db = LegalDBClient()
     return await search.match_legal_articles(q, llm, legal_db)
+
+
+# ============================================================
+# Direct MCP tool endpoints (no LLM key required)
+# ============================================================
+
+@app.post("/api/legal/query-regulation")
+async def api_query_regulation(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db.query_regulation(
+            law_name=payload.get("law_name", ""),
+            pcode=payload.get("pcode", ""),
+            article_no=payload.get("article_no", ""),
+            include_history=payload.get("include_history", False),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/search-regulations")
+async def api_search_regulations(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db.search_regulations(
+            keyword=payload.get("keyword", ""),
+            exclude_abolished=payload.get("exclude_abolished", True),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/get-pcode")
+async def api_get_pcode(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db._post("/get_pcode", {"law_name": payload.get("law_name", "")})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/search-judgments")
+async def api_search_judgments(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db.search_judgments(
+            keyword=payload.get("keyword", ""),
+            max_results=payload.get("max_results", 10),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/get-judgment")
+async def api_get_judgment(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db._post("/get_judgment", payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/get-interpretation")
+async def api_get_interpretation(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db.get_interpretation(payload.get("case_id", ""))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/search-interpretations")
+async def api_search_interpretations(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db._post("/search_interpretations", payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/legal/get-citations")
+async def api_get_citations(payload: dict):
+    legal_db = LegalDBClient()
+    try:
+        return await legal_db._post("/get_citations", payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

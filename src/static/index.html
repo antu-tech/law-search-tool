@@ -5,96 +5,297 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>卷宗搜尋系統</title>
 <style>
-  :root { --bg:#f5f6fa; --card:#fff; --primary:#2f3542; --accent:#3742fa; }
-  * { box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif; background:var(--bg); margin:0; padding:24px; color:var(--primary); }
-  .container { max-width:900px; margin:0 auto; }
-  h1 { font-size:1.5rem; margin-bottom:16px; }
-  .card { background:var(--card); border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
-  label { display:block; font-size:.875rem; margin-bottom:6px; font-weight:600; }
-  input[type="text"], input[type="password"], select { width:100%; padding:10px 12px; border:1px solid #dcdde1; border-radius:8px; font-size:1rem; }
-  button { background:var(--accent); color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:1rem; cursor:pointer; }
-  button:hover { opacity:.9; }
-  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
-  .row > * { flex:1 1 200px; }
-  .results { margin-top:12px; }
-  .result-item { border-bottom:1px solid #eee; padding:12px 0; }
-  .result-item:last-child { border:none; }
-  .meta { font-size:.75rem; color:#747d8c; margin-top:4px; }
-  .tag { display:inline-block; background:#e8e9ff; color:var(--accent); padding:2px 8px; border-radius:4px; font-size:.75rem; margin-right:6px; }
-  .empty { color:#747d8c; font-size:.875rem; }
-  .file-drop { border:2px dashed #dcdde1; border-radius:8px; padding:24px; text-align:center; color:#747d8c; cursor:pointer; }
-  .file-drop.dragover { border-color:var(--accent); background:#f0f1ff; }
-  #docList { list-style:none; padding:0; }
-  #docList li { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f2f6; }
-  .danger { background:#ff4757; }
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --primary: #1a365d;
+    --primary-light: #2c5282;
+    --accent: #2b6cb0;
+    --success: #22543d;
+    --success-bg: #c6f6d5;
+    --warning: #744210;
+    --warning-bg: #fefcbf;
+    --danger: #c53030;
+    --text: #1a202c;
+    --text-secondary: #4a5568;
+    --border: #e2e8f0;
+    --radius: 4px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--primary); color: #fff; padding: 24px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .sidebar-logo { font-size: 1.125rem; font-weight: 700; padding: 0 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 24px;
+    cursor: pointer; font-size: 0.875rem; transition: background 0.15s; border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item.active { background: rgba(255,255,255,0.1); border-left-color: var(--accent); }
+  .main { padding: 32px; max-width: 1200px; }
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 1.5rem; font-weight: 600; color: var(--primary); }
+  .page-header p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 4px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px;
+  }
+  .card-title {
+    font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-bottom: 16px;
+    text-transform: uppercase; letter-spacing: 0.025em;
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); }
+  input, select, textarea {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 0.875rem; font-family: inherit; background: var(--surface); color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 8px 16px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #9b2c2c; }
+  .btn-sm { padding: 6px 12px; font-size: 0.8125rem; }
+  .result-item { padding: 16px; border-bottom: 1px solid var(--border); }
+  .result-item:last-child { border-bottom: none; }
+  .tag {
+    display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius);
+    font-size: 0.75rem; font-weight: 500; margin-right: 6px;
+  }
+  .tag-primary { background: #ebf8ff; color: var(--accent); }
+  .tag-success { background: var(--success-bg); color: var(--success); }
+  .tag-warning { background: var(--warning-bg); color: var(--warning); }
+  .tag-muted { background: #edf2f7; color: var(--text-secondary); }
+  .meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; }
+  .empty-state { text-align: center; padding: 48px; color: var(--text-secondary); }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .file-drop {
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px;
+    text-align: center; color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+  }
+  .file-drop:hover, .file-drop.dragover { border-color: var(--accent); background: #ebf8ff; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .results { margin-top: 16px; }
+  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 16px; }
+  pre {
+    background: #f7fafc; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px; font-size: 0.8125rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  @media (max-width: 768px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>卷宗搜尋系統</h1>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">卷宗搜尋系統</div>
+    <nav>
+      <div class="nav-item active" data-page="cases" onclick="showPage('cases')">📄 卷宗搜尋</div>
+      <div class="nav-item" data-page="regulations" onclick="showPage('regulations')">📚 法規查詢</div>
+      <div class="nav-item" data-page="judgments" onclick="showPage('judgments')">⚖️ 裁判書</div>
+      <div class="nav-item" data-page="constitutional" onclick="showPage('constitutional')">🏛️ 憲法法庭</div>
+      <div class="nav-item" data-page="ai-match" onclick="showPage('ai-match')">🤖 AI 條文匹配</div>
+    </nav>
+  </aside>
 
-  <div class="card">
-    <label for="apiKey">API Key</label>
-    <input type="password" id="apiKey" placeholder="sk-...">
-    <p class="meta">支援 OpenAI / Claude 兼容格式。僅用於本次請求，不會儲存在伺服器。</p>
-  </div>
-
-  <div class="card">
-    <label>上傳卷宗 (PDF / DOCX)</label>
-    <div class="file-drop" id="dropZone">
-      <div>拖曳檔案至此，或 <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none"><a href="#" onclick="document.getElementById('fileInput').click();return false;">點擊選擇</a></div>
-      <div class="meta" id="uploadStatus"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="row">
-      <div style="flex:3">
-        <label for="query">搜尋卷宗</label>
-        <input type="text" id="query" placeholder="輸入關鍵字或法律問題...">
-      </div>
-      <div style="flex:1">
-        <label for="mode">模式</label>
-        <select id="mode">
-          <option value="semantic">語意搜尋</option>
-          <option value="keyword">關鍵字</option>
-          <option value="hybrid">混合</option>
-        </select>
-      </div>
-      <div style="flex:0">
-        <button onclick="doSearch()">搜尋</button>
+  <main class="main">
+    <!-- API Key -->
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1 / -1;max-width:600px">
+          <label>API Key（OpenAI / Claude 兼容格式）</label>
+          <input type="password" id="apiKey" placeholder="sk-...">
+          <span class="meta">AI 語意搜尋與條文匹配需要。法規與裁判書查詢不需要。</span>
+        </div>
       </div>
     </div>
-    <div id="searchResults" class="results"></div>
-  </div>
 
-  <div class="card">
-    <button onclick="matchLegal()">法律條文匹配</button>
-    <div id="legalResults" class="results"></div>
-  </div>
+    <!-- ====== Cases ====== -->
+    <div class="page active" id="page-cases">
+      <div class="page-header"><h1>卷宗搜尋</h1><p>上傳 PDF / Word 卷宗，進行語意或關鍵字搜尋</p></div>
 
-  <div class="card">
-    <label>已上傳卷宗</label>
-    <ul id="docList"><li class="empty">尚無文件</li></ul>
-    <button class="danger" onclick="clearAll()">清除全部</button>
-  </div>
+      <div class="card">
+        <div class="card-title">上傳卷宗</div>
+        <div class="file-drop" id="dropZone">
+          <div>拖曳檔案至此，或 <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none"><a href="#" onclick="document.getElementById('fileInput').click();return false;">點擊選擇</a></div>
+          <div class="meta" id="uploadStatus"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">搜尋</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:3"><input type="text" id="query" placeholder="輸入關鍵字或法律問題..."></div>
+          <div class="form-group" style="flex:1">
+            <select id="mode">
+              <option value="semantic">語意搜尋</option>
+              <option value="keyword">關鍵字</option>
+              <option value="hybrid">混合</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="doSearch()">搜尋</button>
+        </div>
+        <div id="searchResults" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">已上傳卷宗</div>
+        <ul id="docList" style="list-style:none;padding:0"><li class="empty-state">尚無文件</li></ul>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+      </div>
+    </div>
+
+    <!-- ====== Regulations ====== -->
+    <div class="page" id="page-regulations">
+      <div class="page-header"><h1>法規查詢</h1><p>查詢全國法規資料庫（law.moj.gov.tw）11,700+ 部法規</p></div>
+
+      <div class="card">
+        <div class="card-title">單一條文查詢</div>
+        <div class="form-grid">
+          <div class="form-group"><label>法規名稱</label><input type="text" id="regLawName" placeholder="民法、勞動基準法..."></div>
+          <div class="form-group"><label>條號</label><input type="text" id="regArticle" placeholder="184、247-1..."></div>
+          <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="queryRegulation()">查詢</button></div>
+        </div>
+        <div id="regResult" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">法規名稱搜尋</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="regKeyword" placeholder="勞動、消費、智慧財產..."></div>
+          <button class="btn btn-primary" onclick="searchRegulations()">搜尋</button>
+        </div>
+        <div id="regSearchResult" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Pcode 查詢</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="pcodeInput" placeholder="民法、律師法..."></div>
+          <button class="btn btn-primary" onclick="getPcode()">查詢</button>
+        </div>
+        <div id="pcodeResult" class="results"></div>
+      </div>
+    </div>
+
+    <!-- ====== Judgments ====== -->
+    <div class="page" id="page-judgments">
+      <div class="page-header"><h1>裁判書</h1><p>司法院裁判書系統（judgment.judicial.gov.tw）</p></div>
+
+      <div class="card">
+        <div class="card-title">裁判書搜尋</div>
+        <div class="form-grid">
+          <div class="form-group" style="flex:2"><label>關鍵字</label><input type="text" id="judKeyword" placeholder="預售屋 遲延交屋、借名登記..."></div>
+          <div class="form-group"><label>法院</label><input type="text" id="judCourt" placeholder="最高法院、臺灣高等法院..."></div>
+          <div class="form-group"><label>案件類型</label>
+            <select id="judCaseType"><option value="">全部</option><option value="民事">民事</option><option value="刑事">刑事</option><option value="行政">行政</option><option value="懲戒">懲戒</option></select>
+          </div>
+          <div class="form-group"><label>年度起</label><input type="number" id="judYearFrom" placeholder="110"></div>
+          <div class="form-group"><label>年度迄</label><input type="number" id="judYearTo" placeholder="114"></div>
+          <div class="form-group" style="display:flex;align-items:end"><button class="btn btn-primary" onclick="searchJudgments()">搜尋</button></div>
+        </div>
+        <div id="judResult" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">裁判全文取得</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="judJid" placeholder="JID（從搜尋結果複製）"></div>
+          <button class="btn btn-primary" onclick="getJudgment()">取得全文</button>
+        </div>
+        <div id="judFullResult" class="results"></div>
+      </div>
+    </div>
+
+    <!-- ====== Constitutional ====== -->
+    <div class="page" id="page-constitutional">
+      <div class="page-header"><h1>憲法法庭</h1><p>大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）</p></div>
+
+      <div class="card">
+        <div class="card-title">釋字 / 憲判字查詢</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="ccCaseId" placeholder="釋字748、111年憲判字第1號..."></div>
+          <button class="btn btn-primary" onclick="getInterpretation()">查詢</button>
+        </div>
+        <div id="ccResult" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">全文搜尋</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="ccKeyword" placeholder="集會自由、言論自由、婚姻自由..."></div>
+          <button class="btn btn-primary" onclick="searchInterpretations()">搜尋</button>
+        </div>
+        <div id="ccSearchResult" class="results"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">引用關係圖譜</div>
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="ccCiteId" placeholder="釋字748..."></div>
+          <button class="btn btn-primary" onclick="getCitations()">查詢</button>
+        </div>
+        <div id="ccCiteResult" class="results"></div>
+      </div>
+    </div>
+
+    <!-- ====== AI Match ====== -->
+    <div class="page" id="page-ai-match">
+      <div class="page-header"><h1>AI 條文匹配</h1><p>以 AI 分析問題並比對真實法規資料庫驗證</p></div>
+      <div class="card">
+        <div class="toolbar">
+          <div class="form-group" style="flex:1"><input type="text" id="aiQuery" placeholder="輸入法律問題，例如：預售屋遲延交屋的法律依據..."></div>
+          <button class="btn btn-primary" onclick="matchLegal()">分析</button>
+        </div>
+        <div id="aiResult" class="results"></div>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
 const apiKey = () => $('apiKey').value.trim();
-const setStatus = (id, msg, err=false) => $(id).innerHTML = `<span style="color:${err?'#ff4757':'#2ed573'}">${msg}</span>`;
 
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  $('page-' + name).classList.add('active');
+  document.querySelector('.nav-item[data-page="' + name + '"]').classList.add('active');
+}
+
+function setStatus(id, msg, err=false) {
+  const el = $(id);
+  if (!el) return;
+  el.innerHTML = msg ? `<span style="color:${err?'var(--danger)':'var(--success)'}">${msg}</span>` : '';
+}
+
+function loading(id) { $(id).innerHTML = '<div class="empty-state"><span class="spinner"></span> 載入中...</div>'; }
+
+// ---------- Upload & Case Search ----------
 $('fileInput').addEventListener('change', e => upload(e.target.files[0]));
-
 const dz = $('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('dragover');
-  if(e.dataTransfer.files.length) upload(e.dataTransfer.files[0]);
-});
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); if(e.dataTransfer.files.length) upload(e.dataTransfer.files[0]); });
 
 async function upload(file) {
   if(!file) return;
@@ -114,15 +315,11 @@ async function loadDocs() {
   const r = await fetch('/api/documents');
   const docs = await r.json();
   const ul = $('docList');
-  if(!docs.length) { ul.innerHTML='<li class="empty">尚無文件</li>'; return; }
-  ul.innerHTML = docs.map(d => `<li><span>${d.title}</span><button class="danger" style="padding:4px 10px;font-size:.75rem;" onclick="delDoc('${d.id}')">刪除</button></li>`).join('');
+  if(!docs.length) { ul.innerHTML='<li class="empty-state">尚無文件</li>'; return; }
+  ul.innerHTML = docs.map(d => `<li class="result-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(d.title)}</span><button class="btn btn-danger btn-sm" onclick="delDoc('${d.id}')">刪除</button></li>`).join('');
 }
 
-async function delDoc(id) {
-  await fetch(`/api/documents/${id}`, {method:'DELETE'});
-  loadDocs();
-}
-
+async function delDoc(id) { await fetch(`/api/documents/${id}`, {method:'DELETE'}); loadDocs(); }
 async function clearAll() {
   const r = await fetch('/api/documents');
   const docs = await r.json();
@@ -131,45 +328,171 @@ async function clearAll() {
 }
 
 async function doSearch() {
-  const q = $('query').value.trim();
-  if(!q) return;
+  const q = $('query').value.trim(); if(!q) return;
   const mode = $('mode').value;
-  const resDiv = $('searchResults');
-  resDiv.innerHTML = '搜尋中...';
-  const headers = mode==='keyword' ? {} : {'X-Kimi-Api-Key': apiKey()};
-  const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&top_k=5`, {headers});
-  const j = await r.json();
-  if(!j.results || !j.results.length) { resDiv.innerHTML='<div class="empty">無結果</div>'; return; }
-  resDiv.innerHTML = j.results.map(x => `<div class="result-item">
-    <div><span class="tag">${x.title}</span> <span class="tag">分數 ${x.score}</span></div>
-    <div style="margin-top:6px;white-space:pre-wrap;">${escapeHtml(x.text)}</div>
-    ${x.page_start?`<div class="meta">頁碼: ${x.page_start}${x.page_end!==x.page_start?'-'+x.page_end:''}</div>`:''}
-  </div>`).join('');
+  loading('searchResults');
+  const headers = mode==='keyword' ? {} : {'X-Api-Key': apiKey()};
+  try {
+    const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&top_k=5`, {headers});
+    const j = await r.json();
+    if(!j.results || !j.results.length) { $('searchResults').innerHTML='<div class="empty-state">無結果</div>'; return; }
+    $('searchResults').innerHTML = j.results.map(x => `<div class="result-item">
+      <div><span class="tag tag-muted">${escapeHtml(x.title)}</span><span class="tag tag-primary">分數 ${x.score}</span></div>
+      <div style="margin-top:8px;white-space:pre-wrap;font-size:0.875rem">${escapeHtml(x.text)}</div>
+      ${x.page_start?`<div class="meta">頁碼: ${x.page_start}${x.page_end!==x.page_start?'-'+x.page_end:''}</div>`:''}
+    </div>`).join('');
+  } catch(e) { $('searchResults').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
+// ---------- Regulations ----------
+async function queryRegulation() {
+  const law = $('regLawName').value.trim(); const art = $('regArticle').value.trim();
+  if(!law && !art) return; loading('regResult');
+  try {
+    const r = await fetch('/api/legal/query-regulation', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({law_name:law, article_no:art})});
+    const j = await r.json();
+    if(!j.success) { $('regResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
+    let html = `<div class="result-item"><div><span class="tag tag-primary">${escapeHtml(j.law.name)}</span><span class="tag tag-muted">${escapeHtml(j.law.pcode)}</span></div>`;
+    if(j.articles) html += j.articles.map(a => `<div style="margin-top:10px"><strong>第 ${escapeHtml(a.number)} 條</strong><div style="white-space:pre-wrap;margin-top:4px">${escapeHtml(a.content)}</div></div>`).join('');
+    if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
+    html += '</div>';
+    $('regResult').innerHTML = html;
+  } catch(e) { $('regResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+async function searchRegulations() {
+  const kw = $('regKeyword').value.trim(); if(!kw) return; loading('regSearchResult');
+  try {
+    const r = await fetch('/api/legal/search-regulations', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({keyword:kw, exclude_abolished:true})});
+    const j = await r.json();
+    if(!j.success || !j.results.length) { $('regSearchResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
+    $('regSearchResult').innerHTML = j.results.map(x => `<div class="result-item">
+      <span class="tag ${x.status==='現行法規'?'tag-success':'tag-warning'}">${x.status}</span>
+      <span style="font-weight:500">${escapeHtml(x.law_name)}</span>
+      <span class="tag tag-muted">${x.pcode}</span>
+    </div>`).join('');
+  } catch(e) { $('regSearchResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+async function getPcode() {
+  const name = $('pcodeInput').value.trim(); if(!name) return; loading('pcodeResult');
+  try {
+    const r = await fetch('/api/legal/get-pcode', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({law_name:name})});
+    const j = await r.json();
+    if(!j.success) { $('pcodeResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
+    $('pcodeResult').innerHTML = `<div class="result-item">
+      <span class="tag tag-success">${j.status}</span>
+      <strong>${escapeHtml(j.law_name)}</strong>
+      <span class="tag tag-primary">${j.pcode}</span>
+      ${j.matched_from?`<span class="meta">（從「${escapeHtml(j.matched_from)}」匹配）</span>`:''}
+    </div>`;
+  } catch(e) { $('pcodeResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+// ---------- Judgments ----------
+async function searchJudgments() {
+  const kw = $('judKeyword').value.trim(); const court = $('judCourt').value.trim();
+  const caseType = $('judCaseType').value; const yf = parseInt($('judYearFrom').value)||0; const yt = parseInt($('judYearTo').value)||0;
+  loading('judResult');
+  try {
+    const r = await fetch('/api/legal/search-judgments', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({keyword:kw, court, case_type:caseType, year_from:yf, year_to:yt, max_results:10})});
+    const j = await r.json();
+    if(!j.success || !j.results.length) { $('judResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
+    $('judResult').innerHTML = j.results.map(x => `<div class="result-item">
+      <div><span class="tag tag-muted">${escapeHtml(x.court)}</span><span class="tag tag-primary">${escapeHtml(x.case_type)}</span><span class="tag tag-muted">${escapeHtml(x.date)}</span></div>
+      <div style="margin-top:6px;font-weight:500">${escapeHtml(x.title)}</div>
+      <div class="meta">${escapeHtml(x.case_id)}</div>
+      <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="getJudgmentById('${escapeHtml(x.case_id)}')">取得全文</button>
+    </div>`).join('');
+  } catch(e) { $('judResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+async function getJudgmentById(jid) { $('judJid').value = jid; getJudgment(); showPage('judgments'); }
+
+async function getJudgment() {
+  const jid = $('judJid').value.trim(); if(!jid) return; loading('judFullResult');
+  try {
+    const r = await fetch('/api/legal/get-judgment', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jid})});
+    const j = await r.json();
+    if(!j.success) { $('judFullResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
+    let html = `<div class="result-item">
+      <div><span class="tag tag-muted">${escapeHtml(j.court)}</span><span class="tag tag-primary">${escapeHtml(j.date)}</span></div>
+      <div style="margin-top:10px"><strong>主文</strong><pre>${escapeHtml(j.main_text)}</pre></div>`;
+    if(j.facts) html += `<div style="margin-top:10px"><strong>事實</strong><pre>${escapeHtml(j.facts)}</pre></div>`;
+    if(j.reasoning) html += `<div style="margin-top:10px"><strong>理由</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
+    if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
+    html += '</div>';
+    $('judFullResult').innerHTML = html;
+  } catch(e) { $('judFullResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+// ---------- Constitutional Court ----------
+async function getInterpretation() {
+  const id = $('ccCaseId').value.trim(); if(!id) return; loading('ccResult');
+  try {
+    const r = await fetch('/api/legal/get-interpretation', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({case_id:id})});
+    const j = await r.json();
+    if(!j.success) { $('ccResult').innerHTML=`<div class="empty-state">${escapeHtml(j.error||'查無資料')}</div>`; return; }
+    let html = `<div class="result-item">
+      <div><span class="tag tag-primary">${escapeHtml(j.case_id)}</span><span class="tag tag-muted">${escapeHtml(j.date)}</span></div>
+      <div style="margin-top:10px"><strong>爭點</strong><div>${escapeHtml(j.issue)}</div></div>
+      <div style="margin-top:10px"><strong>解釋文</strong><pre>${escapeHtml(j.holding)}</pre></div>`;
+    if(j.reasoning) html += `<div style="margin-top:10px"><strong>理由書</strong><pre>${escapeHtml(j.reasoning)}</pre></div>`;
+    if(j.source_url) html += `<div class="meta"><a href="${j.source_url}" target="_blank">來源：${j.source_url}</a></div>`;
+    html += '</div>';
+    $('ccResult').innerHTML = html;
+  } catch(e) { $('ccResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+async function searchInterpretations() {
+  const kw = $('ccKeyword').value.trim(); if(!kw) return; loading('ccSearchResult');
+  try {
+    const r = await fetch('/api/legal/search-interpretations', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({keyword:kw})});
+    const j = await r.json();
+    if(!j.success || !j.results.length) { $('ccSearchResult').innerHTML='<div class="empty-state">無結果</div>'; return; }
+    $('ccSearchResult').innerHTML = j.results.map(x => `<div class="result-item">
+      <div><span class="tag tag-primary">${escapeHtml(x.case_id)}</span><span class="tag tag-muted">${escapeHtml(x.date)}</span></div>
+      <div style="margin-top:6px;font-weight:500">${escapeHtml(x.issue)}</div>
+      <button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="$('ccCaseId').value='${escapeHtml(x.case_id)}';getInterpretation();showPage('constitutional')">查看全文</button>
+    </div>`).join('');
+  } catch(e) { $('ccSearchResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+async function getCitations() {
+  const id = $('ccCiteId').value.trim(); if(!id) return; loading('ccCiteResult');
+  try {
+    const r = await fetch('/api/legal/get-citations', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({case_id:id, include_context:true})});
+    const j = await r.json();
+    if(!j.success || !j.citations.length) { $('ccCiteResult').innerHTML='<div class="empty-state">無引用關係</div>'; return; }
+    $('ccCiteResult').innerHTML = j.citations.map(x => `<div class="result-item">
+      <span class="tag tag-primary">${escapeHtml(x)}</span>
+    </div>`).join('');
+  } catch(e) { $('ccCiteResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
+}
+
+// ---------- AI Match ----------
 async function matchLegal() {
-  const q = $('query').value.trim();
-  if(!q) return;
+  const q = $('aiQuery').value.trim(); if(!q) return;
   if(!apiKey()) { alert('請先輸入 API Key'); return; }
-  const div = $('legalResults'); div.innerHTML='分析中...';
-  const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Api-Key': apiKey()}});
-  const j = await r.json();
-  if(!j.articles || !j.articles.length) { div.innerHTML='<div class="empty">無匹配條文</div>'; return; }
-  div.innerHTML = j.articles.map(a => `<div class="result-item">
-    <div>
-      <span class="tag">${a.law}</span>
-      <span class="tag">第 ${a.article} 條</span>
-      <span class="tag" style="background:${a.verified?'#d4edda':'#fff3cd'};color:${a.verified?'#155724':'#856404'};">${a.verified?'✅ 已驗證':'⚠️ 未驗證'}</span>
-    </div>
-    ${a.text?`<div style="margin-top:6px;white-space:pre-wrap;">${escapeHtml(a.text)}</div>`:''}
-    <div style="margin-top:6px;">${escapeHtml(a.reason)}</div>
-    ${a.source_url?`<div class="meta"><a href="${a.source_url}" target="_blank">來源：${a.source_url}</a></div>`:''}
-  </div>`).join('');
+  loading('aiResult');
+  try {
+    const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Api-Key': apiKey()}});
+    const j = await r.json();
+    if(!j.articles || !j.articles.length) { $('aiResult').innerHTML='<div class="empty-state">無匹配條文</div>'; return; }
+    $('aiResult').innerHTML = j.articles.map(a => `<div class="result-item">
+      <div>
+        <span class="tag tag-primary">${escapeHtml(a.law)}</span>
+        <span class="tag tag-muted">第 ${escapeHtml(a.article)} 條</span>
+        <span class="tag ${a.verified?'tag-success':'tag-warning'}">${a.verified?'✅ 已驗證':'⚠️ 未驗證'}</span>
+      </div>
+      ${a.text?`<div style="margin-top:8px;white-space:pre-wrap;font-size:0.875rem">${escapeHtml(a.text)}</div>`:''}
+      <div style="margin-top:6px;font-size:0.875rem;color:var(--text-secondary)">${escapeHtml(a.reason)}</div>
+      ${a.source_url?`<div class="meta"><a href="${a.source_url}" target="_blank">來源：${a.source_url}</a></div>`:''}
+    </div>`).join('');
+  } catch(e) { $('aiResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
-function escapeHtml(t) {
-  const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
-}
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
 loadDocs();
 </script>
