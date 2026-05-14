@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/antu-tech/law-search-tool/main/scri
 ### 輸入 API Key
 
 1. 點選左側「設定」
-2. 輸入你的 OpenAI / Claude / Kimi API Key
+2. 輸入你的 OpenAI / Claude API Key
 3. 開始使用「文件搜尋」上傳 PDF 或 Word 文件，或使用「法規查詢」「裁判書」「憲法法庭」查詢公開資料庫
 
 > **注意**：API Key 只存在你的電腦記憶體中，不會傳送到任何第三方伺服器。
