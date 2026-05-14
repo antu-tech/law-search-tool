@@ -396,6 +396,40 @@
   /* Results container */
   .results { margin-top: 16px; }
 
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: var(--surface-solid);
+    border: 1px solid var(--border);
+    border-radius: 980px;
+    width: fit-content;
+  }
+  .tab-bar .tab {
+    padding: 8px 18px;
+    border-radius: 980px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .tab-bar .tab:hover {
+    color: var(--text);
+  }
+  .tab-bar .tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .cc-panel { display: none; }
+  .cc-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
   /* Document list */
   #docList { list-style: none; padding: 0; }
   #docList .result-item {
@@ -557,31 +591,39 @@
         <p class="page-subtitle">大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）</p>
       </div>
 
-      <div class="card">
-        <div class="card-title">釋字 / 憲判字查詢</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="ccCaseId" placeholder="釋字748、111年憲判字第1號..."></div>
-          <button class="btn btn-primary" onclick="getInterpretation()">查詢</button>
-        </div>
-        <div id="ccResult" class="results"></div>
+      <div class="tab-bar">
+        <button class="tab active" data-cc-tab="lookup" onclick="showCcTab('lookup')">釋字 / 憲判字查詢</button>
+        <button class="tab" data-cc-tab="search" onclick="showCcTab('search')">全文搜尋</button>
+        <button class="tab" data-cc-tab="citations" onclick="showCcTab('citations')">引用關係圖譜</button>
       </div>
 
       <div class="card">
-        <div class="card-title">全文搜尋</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="ccKeyword" placeholder="集會自由、言論自由、婚姻自由..."></div>
-          <button class="btn btn-primary" onclick="searchInterpretations()">搜尋</button>
+        <!-- Tab: Lookup -->
+        <div class="cc-panel active" id="cc-panel-lookup">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="ccCaseId" placeholder="釋字748、111年憲判字第1號..." onkeydown="if(event.key==='Enter')getInterpretation()"></div>
+            <button class="btn btn-primary" onclick="getInterpretation()">查詢</button>
+          </div>
+          <div id="ccResult" class="results"></div>
         </div>
-        <div id="ccSearchResult" class="results"></div>
-      </div>
 
-      <div class="card">
-        <div class="card-title">引用關係圖譜</div>
-        <div class="toolbar">
-          <div class="form-group" style="flex:1"><input type="text" id="ccCiteId" placeholder="釋字748..."></div>
-          <button class="btn btn-primary" onclick="getCitations()">查詢</button>
+        <!-- Tab: Search -->
+        <div class="cc-panel" id="cc-panel-search">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="ccKeyword" placeholder="集會自由、言論自由、婚姻自由..." onkeydown="if(event.key==='Enter')searchInterpretations()"></div>
+            <button class="btn btn-primary" onclick="searchInterpretations()">搜尋</button>
+          </div>
+          <div id="ccSearchResult" class="results"></div>
         </div>
-        <div id="ccCiteResult" class="results"></div>
+
+        <!-- Tab: Citations -->
+        <div class="cc-panel" id="cc-panel-citations">
+          <div class="toolbar">
+            <div class="form-group" style="flex:1"><input type="text" id="ccCiteId" placeholder="釋字748..." onkeydown="if(event.key==='Enter')getCitations()"></div>
+            <button class="btn btn-primary" onclick="getCitations()">查詢</button>
+          </div>
+          <div id="ccCiteResult" class="results"></div>
+        </div>
       </div>
     </div>
 
@@ -807,6 +849,13 @@ async function getJudgment() {
   } catch(e) { $('judFullResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
 
+function showCcTab(name) {
+  document.querySelectorAll('.cc-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+  $('cc-panel-' + name).classList.add('active');
+  document.querySelector('.tab-bar .tab[data-cc-tab="' + name + '"]').classList.add('active');
+}
+
 // ---------- Constitutional Court ----------
 async function getInterpretation() {
   const id = $('ccCaseId').value.trim(); if(!id) return; loading('ccResult');
@@ -848,7 +897,8 @@ async function getCitations() {
     const j = await r.json();
     if(!j.success || !j.citations.length) { $('ccCiteResult').innerHTML='<div class="empty-state">無引用關係</div>'; return; }
     $('ccCiteResult').innerHTML = j.citations.map(x => `<div class="result-item">
-      <span class="tag tag-blue">${escapeHtml(x)}</span>
+      <span class="tag tag-blue">${escapeHtml(x.case_id || x)}</span>
+      <span class="tag tag-gray">${escapeHtml(x.type || '')}</span>
     </div>`).join('');
   } catch(e) { $('ccCiteResult').innerHTML=`<div class="empty-state" style="color:var(--danger)">${e.message}</div>`; }
 }
