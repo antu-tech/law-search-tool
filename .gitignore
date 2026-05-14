@@ -1,2 +1,4 @@
 data/
 releases/*.dmg
+build/dist/
+build/work/
