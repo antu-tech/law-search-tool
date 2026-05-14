@@ -23,8 +23,8 @@ services:
   legal-db:
     build: ./legal-db-bridge
     container_name: law-search-legal-db
-    ports:
-      - "${LEGAL_DB_PORT:-8001}:8001"
+    # ports:
+    #   - "${LEGAL_DB_PORT:-8001}:8001"  # 僅除錯時開啟
     restart: unless-stopped
     networks:
       - law-search-net
