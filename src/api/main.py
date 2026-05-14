@@ -11,7 +11,7 @@ from src.infrastructure.db import Database
 from src.infrastructure.vector_index import VectorIndex
 from src.application.parsing_service import ParsingService
 from src.application.search_service import SearchService, SearchResult
-from src.application.kimi_service import KimiService
+from src.application.llm_service import LLMService
 
 DB_PATH = os.getenv("SQLITE_PATH", "data/law_search.db")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
@@ -33,10 +33,10 @@ app = FastAPI(title="Law Search Tool", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 
-def _kimi(api_key: Optional[str]) -> KimiService:
+def _llm(api_key: Optional[str]) -> LLMService:
     if not api_key:
-        raise HTTPException(status_code=401, detail="Missing X-Kimi-Api-Key header")
-    return KimiService(api_key)
+        raise HTTPException(status_code=401, detail="Missing X-Api-Key header")
+    return LLMService(api_key)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -48,9 +48,9 @@ async def root():
 @app.post("/api/documents")
 async def upload_document(
     file: UploadFile = File(...),
-    x_kimi_api_key: Optional[str] = Header(None, alias="X-Kimi-Api-Key"),
+    x_api_key: Optional[str] = Header(None, alias="X-Api-Key"),
 ):
-    kimi = _kimi(x_kimi_api_key)
+    llm = _llm(x_api_key)
     safe_name = os.path.basename(file.filename or "untitled")
     ext = os.path.splitext(safe_name)[1].lower()
     if ext not in (".pdf", ".docx"):
@@ -62,7 +62,7 @@ async def upload_document(
 
     try:
         doc = parsing.parse(file_path, safe_name)
-        await search.index_document(doc, kimi)
+        await search.index_document(doc, llm)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -90,7 +90,7 @@ async def search_endpoint(
     q: str,
     mode: str = "semantic",  # semantic | keyword | hybrid
     top_k: int = 5,
-    x_kimi_api_key: Optional[str] = Header(None, alias="X-Kimi-Api-Key"),
+    x_api_key: Optional[str] = Header(None, alias="X-Api-Key"),
 ):
     if not q.strip():
         raise HTTPException(status_code=400, detail="Query required")
@@ -98,13 +98,13 @@ async def search_endpoint(
     results: List[SearchResult] = []
 
     if mode == "semantic":
-        kimi = _kimi(x_kimi_api_key)
-        results = await search.semantic_search(q, kimi, top_k=top_k)
+        llm = _llm(x_api_key)
+        results = await search.semantic_search(q, llm, top_k=top_k)
     elif mode == "keyword":
         results = search.keyword_search(q, top_k=top_k)
     elif mode == "hybrid":
-        kimi = _kimi(x_kimi_api_key)
-        sem = await search.semantic_search(q, kimi, top_k=top_k)
+        llm = _llm(x_api_key)
+        sem = await search.semantic_search(q, llm, top_k=top_k)
         key = search.keyword_search(q, top_k=top_k)
         # merge and deduplicate
         seen = set()
@@ -123,7 +123,7 @@ async def search_endpoint(
 @app.get("/api/legal-articles")
 async def legal_articles(
     q: str,
-    x_kimi_api_key: Optional[str] = Header(None, alias="X-Kimi-Api-Key"),
+    x_api_key: Optional[str] = Header(None, alias="X-Api-Key"),
 ):
-    kimi = _kimi(x_kimi_api_key)
-    return await search.match_legal_articles(q, kimi)
+    llm = _llm(x_api_key)
+    return await search.match_legal_articles(q, llm)

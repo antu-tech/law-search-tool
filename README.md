@@ -1,13 +1,13 @@
 # 卷宗搜尋系統 (Law Search Tool)
 
-輕量級、可自托管的法律卷宗全文檢索與語意搜尋系統。律師客戶自行提供 Kimi API Key，資料完全在地。
+輕量級、可自托管的法律卷宗全文檢索與語意搜尋系統。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
 
 ## 功能
 - 📄 **PDF / Word 解析**：自動分段建立索引
-- 🔍 **語意搜尋**：基於 Kimi Embedding 的向量檢索
+- 🔍 **語意搜尋**：基於 OpenAI Embedding 的向量檢索
 - 📝 **關鍵字搜尋**：SQLite 輕量全文過濾
 - ⚖️ **法律條文匹配**：AI 自動推薦適用法條
-- 🔑 **自帶 API Key**：每位用戶使用自己的 Kimi Key，平台不儲存
+- 🔑 **自帶 API Key**：每位用戶使用自己的 OpenAI / Claude Key，平台不儲存
 
 ## 快速開始
 
@@ -21,7 +21,7 @@ docker-compose up --build
 訪問 http://localhost:8000
 
 ### 3. 輸入 Kimi API Key
-在頁面輸入你的 [Moonshot AI](https://platform.moonshot.cn) API Key，即可開始上傳與搜尋。
+在頁面輸入你的 OpenAI / Claude / 兼容 API Key，即可開始上傳與搜尋。
 
 ## 技術棧
 | 層級 | 技術 |

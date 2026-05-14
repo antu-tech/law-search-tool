@@ -5,7 +5,7 @@ from src.infrastructure.db import Database
 from src.infrastructure.vector_index import VectorIndex
 from src.application.search_service import SearchService
 from src.domain.document import Document, Chunk
-from src.application.kimi_service import KimiService
+from src.application.llm_service import LLMService
 
 
 @pytest.fixture
@@ -22,8 +22,8 @@ def search_svc(temp_db):
 
 @pytest.mark.asyncio
 async def test_semantic_search(search_svc):
-    mock_kimi = AsyncMock(spec=KimiService)
-    mock_kimi.embed.return_value = [
+    mock_llm = AsyncMock(spec=LLMService)
+    mock_llm.embed.return_value = [
         np.array([1.0, 0.0], dtype=np.float32),
         np.array([0.0, 1.0], dtype=np.float32),
     ]
@@ -32,8 +32,8 @@ async def test_semantic_search(search_svc):
         id="d1", title="test", content_type="pdf",
         chunks=[Chunk(text="hello", index=0), Chunk(text="world", index=1)],
     )
-    await search_svc.index_document(doc, mock_kimi)
-    mock_kimi.embed.return_value = [np.array([1.0, 0.0], dtype=np.float32)]
-    results = await search_svc.semantic_search("hello", mock_kimi, top_k=2)
+    await search_svc.index_document(doc, mock_llm)
+    mock_llm.embed.return_value = [np.array([1.0, 0.0], dtype=np.float32)]
+    results = await search_svc.semantic_search("hello", mock_llm, top_k=2)
     assert len(results) >= 1
     assert results[0].doc_id == "d1"

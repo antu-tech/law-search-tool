@@ -12,7 +12,7 @@ services:
     environment:
       - SQLITE_PATH=/app/data/law_search.db
       - UPLOAD_DIR=/app/uploads
-      - KIMI_BASE_URL=https://api.moonshot.cn/v1
+      - OPENAI_BASE_URL=https://api.openai.com/v1
     restart: unless-stopped
     networks:
       - law-search-net

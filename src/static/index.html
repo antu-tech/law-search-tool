@@ -35,9 +35,9 @@
   <h1>卷宗搜尋系統</h1>
 
   <div class="card">
-    <label for="apiKey">Kimi API Key</label>
+    <label for="apiKey">API Key</label>
     <input type="password" id="apiKey" placeholder="sk-...">
-    <p class="meta">您的 API Key 僅用於本次請求，不會儲存在伺服器。</p>
+    <p class="meta">支援 OpenAI / Claude 兼容格式。僅用於本次請求，不會儲存在伺服器。</p>
   </div>
 
   <div class="card">
@@ -98,11 +98,11 @@ dz.addEventListener('drop', e => {
 
 async function upload(file) {
   if(!file) return;
-  if(!apiKey()) { alert('請先輸入 Kimi API Key'); return; }
+  if(!apiKey()) { alert('請先輸入 API Key'); return; }
   setStatus('uploadStatus', '上傳中...');
   const fd = new FormData(); fd.append('file', file);
   try {
-    const r = await fetch('/api/documents', { method:'POST', headers:{'X-Kimi-Api-Key':apiKey()}, body:fd });
+    const r = await fetch('/api/documents', { method:'POST', headers:{'X-Api-Key':apiKey()}, body:fd });
     const j = await r.json();
     if(!r.ok) throw new Error(j.detail || '上傳失敗');
     setStatus('uploadStatus', `已索引：${j.title}（${j.chunks} 段落）`);
@@ -150,9 +150,9 @@ async function doSearch() {
 async function matchLegal() {
   const q = $('query').value.trim();
   if(!q) return;
-  if(!apiKey()) { alert('請先輸入 Kimi API Key'); return; }
+  if(!apiKey()) { alert('請先輸入 API Key'); return; }
   const div = $('legalResults'); div.innerHTML='分析中...';
-  const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Kimi-Api-Key': apiKey()}});
+  const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Api-Key': apiKey()}});
   const j = await r.json();
   if(!j.articles || !j.articles.length) { div.innerHTML='<div class="empty">無匹配條文</div>'; return; }
   div.innerHTML = j.articles.map(a => `<div class="result-item">

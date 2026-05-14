@@ -5,7 +5,7 @@ from typing import List, Optional
 from src.domain.document import Document
 from src.infrastructure.db import Database
 from src.infrastructure.vector_index import VectorIndex
-from src.application.kimi_service import KimiService
+from src.application.llm_service import LLMService
 
 
 class SearchResult:
@@ -36,11 +36,11 @@ class SearchService:
         self.db = db
         self.index = index
 
-    async def index_document(self, doc: Document, kimi: KimiService):
+    async def index_document(self, doc: Document, llm: LLMService):
         texts = [c.text for c in doc.chunks]
         if not texts:
             return
-        vectors = await kimi.embed(texts)
+        vectors = await llm.embed(texts)
         self.db.save_document(doc)
         # serialize vectors to bytes for storage
         byte_vectors = [v.tobytes() for v in vectors]
@@ -50,8 +50,8 @@ class SearchService:
         for chunk, vec in zip(doc.chunks, vectors):
             self.index.add(doc.id, chunk.index, vec)
 
-    async def semantic_search(self, query: str, kimi: KimiService, top_k: int = 5) -> List[SearchResult]:
-        q_vec = (await kimi.embed([query]))[0]
+    async def semantic_search(self, query: str, llm: LLMService, top_k: int = 5) -> List[SearchResult]:
+        q_vec = (await llm.embed([query]))[0]
         results = self.index.search(q_vec, top_k=top_k)
         out: List[SearchResult] = []
         for doc_id, chunk_idx, score in results:
@@ -97,13 +97,13 @@ class SearchService:
             ))
         return sorted(out, key=lambda x: x.score, reverse=True)
 
-    async def match_legal_articles(self, query: str, kimi: KimiService) -> dict:
+    async def match_legal_articles(self, query: str, llm: LLMService) -> dict:
         system_msg = (
             "你是一位台灣法律專家。請從使用者的問題中，找出最相關的法律名稱與條文編號，"
             "並簡要說明適用理由。請以 JSON 格式回應："
             '{"articles": [{"law": "法律名稱", "article": "條號", "reason": "適用理由"}]}'
         )
-        content = await kimi.chat([
+        content = await llm.chat([
             {"role": "system", "content": system_msg},
             {"role": "user", "content": query},
         ])
