@@ -126,64 +126,71 @@ class AntuApp:
         btn.pack(side="left", padx=4)
         return btn
 
+    # -- Thread-safe UI helpers (all tkinter calls run on main thread) --
     def log(self, text):
-        self.log_area.configure(state="normal")
-        self.log_area.insert("end", text + "\n")
-        self.log_area.see("end")
-        self.log_area.configure(state="disabled")
+        def _do():
+            self.log_area.configure(state="normal")
+            self.log_area.insert("end", text + "\n")
+            self.log_area.see("end")
+            self.log_area.configure(state="disabled")
+        self.root.after(0, _do)
 
     def set_status(self, text):
-        self.status_var.set(text)
-        self.root.update_idletasks()
+        self.root.after(0, lambda: self.status_var.set(text))
 
     def set_buttons_enabled(self, enabled):
         state = "normal" if enabled else "disabled"
-        for btn in [self.btn_start, self.btn_stop, self.btn_browser, self.btn_update]:
+        self.root.after(0, lambda: [
             btn.configure(state=state)
+            for btn in [self.btn_start, self.btn_stop, self.btn_browser, self.btn_update]
+        ])
 
     def set_docker_status(self, ready, message):
-        self.docker_ready = ready
-        color = "#34c759" if ready else "#ff3b30"
-        self.docker_indicator.itemconfig(self.docker_circle, fill=color)
-        self.docker_label.config(text=message)
+        def _do():
+            self.docker_ready = ready
+            color = "#34c759" if ready else "#ff3b30"
+            self.docker_indicator.itemconfig(self.docker_circle, fill=color)
+            self.docker_label.config(text=message)
+        self.root.after(0, _do)
+
+    def show_docker_wizard(self):
+        def _do():
+            self.wizard_frame.pack(fill="x", padx=24, pady=8)
+            self.wizard_title.config(text="第一步：安裝 Docker Desktop")
+            self.wizard_desc.config(
+                text="Antu Legal Search 需要 Docker Desktop 來運行後端服務。\n"
+                     "1. 點選下方「下載 Docker」按鈕\n"
+                     "2. 雙擊下載的 .dmg 並拖曳 Docker 到 Applications\n"
+                     "3. 開啟 Docker Desktop，等待左下角變成綠色\n"
+                     "4. 回到此視窗，點選「已完成安裝」"
+            )
+            self.wizard_btn.config(text="下載 Docker", bg="#0071e3", fg="white",
+                                   activebackground="#0071e3", command=self.download_docker)
+            self.wizard_btn2.config(text="已完成安裝", bg="#34c759", fg="white",
+                                    activebackground="#34c759", command=self.on_docker_installed)
+        self.root.after(0, _do)
 
     def check_docker_silent(self):
         def task():
             rc, out, err = run_cmd("docker info", capture=True)
             if rc == 0:
                 self.set_docker_status(True, "Docker 已就緒")
-                self.log("✓ Docker 已就緒")
+                self.log("[OK] Docker 已就緒")
                 self.set_buttons_enabled(True)
             else:
                 self.set_docker_status(False, "需要安裝 Docker")
-                self.log("⚠️ Docker 未安裝或未啟動")
+                self.log("[WARN] Docker 未安裝或未啟動")
                 self.show_docker_wizard()
         threading.Thread(target=task, daemon=True).start()
-
-    def show_docker_wizard(self):
-        self.wizard_frame.pack(fill="x", padx=24, pady=8)
-        self.wizard_title.config(text="第一步：安裝 Docker Desktop")
-        self.wizard_desc.config(
-            text="Antu Legal Search 需要 Docker Desktop 來運行後端服務。\n"
-                 "1. 點選下方「下載 Docker」按鈕\n"
-                 "2. 雙擊下載的 .dmg 並拖曳 Docker 到 Applications\n"
-                 "3. 開啟 Docker Desktop，等待左下角變成綠色\n"
-                 "4. 回到此視窗，點選「已完成安裝」"
-        )
-        self.wizard_btn.config(text="下載 Docker", bg="#0071e3", fg="white",
-                               activebackground="#0071e3", command=self.download_docker)
-        self.wizard_btn2.config(text="已完成安裝", bg="#34c759", fg="white",
-                                activebackground="#34c759", command=self.on_docker_installed)
 
     def download_docker(self):
         self.log("正在開啟 Docker Desktop 下載頁面...")
         run_cmd(f"open '{DOCKER_DOWNLOAD_URL}'")
 
     def on_docker_installed(self):
-        self.wizard_desc.config(text="正在檢查 Docker 狀態，請稍候...")
-        self.wizard_btn.pack_forget()
-        self.wizard_btn2.pack_forget()
-        self.root.update_idletasks()
+        self.root.after(0, lambda: self.wizard_desc.config(text="正在檢查 Docker 狀態，請稍候..."))
+        self.root.after(0, lambda: self.wizard_btn.pack_forget())
+        self.root.after(0, lambda: self.wizard_btn2.pack_forget())
 
         def poll():
             for i in range(60):  # Poll for up to 60 seconds
@@ -191,29 +198,31 @@ class AntuApp:
                 if rc == 0:
                     self.root.after(0, self.on_docker_ready)
                     return
-                self.root.after(0, lambda s=f"等待 Docker 啟動中... ({i+1}s)": self.wizard_desc.config(text=s))
+                msg = f"等待 Docker 啟動中... ({i+1}s)"
+                self.root.after(0, lambda m=msg: self.wizard_desc.config(text=m))
                 time.sleep(1)
             self.root.after(0, self.on_docker_timeout)
         threading.Thread(target=poll, daemon=True).start()
 
     def on_docker_ready(self):
         self.set_docker_status(True, "Docker 已就緒")
-        self.log("✓ Docker 已就緒")
-        self.wizard_frame.pack_forget()
+        self.log("[OK] Docker 已就緒")
+        self.root.after(0, lambda: self.wizard_frame.pack_forget())
         self.set_buttons_enabled(True)
         self.set_status("就緒 — 可以啟動服務")
 
     def on_docker_timeout(self):
-        self.wizard_desc.config(
+        self.root.after(0, lambda: self.wizard_desc.config(
             text="未檢測到 Docker。請確認 Docker Desktop 已開啟且左下角為綠色。"
-        )
-        self.wizard_btn.pack(side="left", padx=4)
-        self.wizard_btn2.pack(side="left", padx=4)
+        ))
+        self.root.after(0, lambda: self.wizard_btn.pack(side="left", padx=4))
+        self.root.after(0, lambda: self.wizard_btn2.pack(side="left", padx=4))
 
     def on_start(self):
         if not self.docker_ready:
             messagebox.showwarning("需要 Docker", "請先完成 Docker 安裝")
             return
+
         def task():
             self.set_status("正在啟動...")
             self.log("--- 啟動服務 ---")
@@ -222,7 +231,7 @@ class AntuApp:
                 self.log("首次安裝，正在下載...")
                 rc, _, err = run_cmd(f"git clone --depth 1 {REPO_URL} '{APP_DIR}'", cwd=os.path.expanduser("~"))
                 if rc != 0:
-                    self.log(f"下載失敗: {err}")
+                    self.log(f"[ERR] 下載失敗: {err}")
                     self.set_status("下載失敗")
                     return
 
@@ -231,11 +240,11 @@ class AntuApp:
 
             rc, _, err = run_cmd("docker-compose up --build -d", cwd=APP_DIR)
             if rc != 0:
-                self.log(f"啟動失敗: {err}")
+                self.log(f"[ERR] 啟動失敗: {err}")
                 self.set_status("啟動失敗")
                 return
 
-            self.log("✓ 服務已啟動")
+            self.log("[OK] 服務已啟動")
             self.log(f"請開啟瀏覽器訪問 http://localhost:{PORT}")
             self.set_status(f"運行中 — http://localhost:{PORT}")
         threading.Thread(target=task, daemon=True).start()
@@ -246,10 +255,10 @@ class AntuApp:
             self.log("--- 停止服務 ---")
             rc, _, err = run_cmd("docker-compose down", cwd=APP_DIR)
             if rc != 0:
-                self.log(f"停止失敗: {err}")
+                self.log(f"[ERR] 停止失敗: {err}")
                 self.set_status("停止失敗")
                 return
-            self.log("✓ 服務已停止")
+            self.log("[OK] 服務已停止")
             self.set_status("已停止")
         threading.Thread(target=task, daemon=True).start()
 
@@ -263,13 +272,13 @@ class AntuApp:
             self.log("--- 檢查更新 ---")
 
             if not os.path.isdir(os.path.join(APP_DIR, ".git")):
-                self.log("尚未安裝，無法更新")
+                self.log("[WARN] 尚未安裝，無法更新")
                 self.set_status("尚未安裝")
                 return
 
             rc, _, err = run_cmd("git fetch origin main", cwd=APP_DIR)
             if rc != 0:
-                self.log(f"檢查失敗: {err}")
+                self.log(f"[ERR] 檢查失敗: {err}")
                 self.set_status("檢查失敗")
                 return
 
@@ -277,25 +286,25 @@ class AntuApp:
             _, remote, _ = run_cmd("git rev-parse origin/main", cwd=APP_DIR)
 
             if local.strip() == remote.strip():
-                self.log("✓ 已經是最新版本")
+                self.log("[OK] 已經是最新版本")
                 self.set_status("已是最新版")
                 return
 
             self.log("發現新版本，正在更新...")
             rc, _, err = run_cmd("git pull origin main", cwd=APP_DIR)
             if rc != 0:
-                self.log(f"更新失敗: {err}")
+                self.log(f"[ERR] 更新失敗: {err}")
                 self.set_status("更新失敗")
                 return
 
             self.log("重建並重啟...")
             rc, _, err = run_cmd("docker-compose down && docker-compose up --build -d", cwd=APP_DIR)
             if rc != 0:
-                self.log(f"重啟失敗: {err}")
+                self.log(f"[ERR] 重啟失敗: {err}")
                 self.set_status("重啟失敗")
                 return
 
-            self.log("✓ 更新完成")
+            self.log("[OK] 更新完成")
             self.set_status("更新完成 — 運行中")
         threading.Thread(target=task, daemon=True).start()
 
