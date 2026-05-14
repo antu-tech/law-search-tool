@@ -483,23 +483,12 @@
       </div>
 
       <div class="tab-bar">
-        <button class="tab active" data-tab="cases-upload" onclick="showTab('cases','upload')">上傳卷宗</button>
-        <button class="tab" data-tab="cases-search" onclick="showTab('cases','search')">搜尋</button>
-        <button class="tab" data-tab="cases-docs" onclick="showTab('cases','docs')">已上傳卷宗</button>
+        <button class="tab active" data-tab="cases-search" onclick="showTab('cases','search')">搜尋</button>
+        <button class="tab" data-tab="cases-manage" onclick="showTab('cases','manage')">卷宗管理</button>
       </div>
 
       <div class="card">
-        <div class="tab-panel active" id="cases-panel-upload">
-          <div class="file-drop" id="dropZone">
-            <div style="font-size:32px;margin-bottom:8px"><span class="material-icons-round" style="font-size:32px;color:var(--primary)">upload_file</span></div>
-            <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
-            <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
-            <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
-            <div class="hint" id="uploadStatus"></div>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="cases-panel-search">
+        <div class="tab-panel active" id="cases-panel-search">
           <div class="toolbar">
             <div class="form-group" style="flex:3"><input type="text" id="query" placeholder="輸入關鍵字或法律問題..." onkeydown="if(event.key==='Enter')doSearch()"></div>
             <div class="form-group" style="flex:1">
@@ -514,9 +503,22 @@
           <div id="searchResults" class="results"></div>
         </div>
 
-        <div class="tab-panel" id="cases-panel-docs">
-          <ul id="docList"><li class="empty-state">尚無文件</li></ul>
-          <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+        <div class="tab-panel" id="cases-panel-manage">
+          <div class="card" style="border:none;box-shadow:none;padding:0;margin-bottom:20px">
+            <div class="card-title">上傳卷宗</div>
+            <div class="file-drop" id="dropZone">
+              <div style="font-size:32px;margin-bottom:8px"><span class="material-icons-round" style="font-size:32px;color:var(--primary)">upload_file</span></div>
+              <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
+              <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
+              <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
+              <div class="hint" id="uploadStatus"></div>
+            </div>
+          </div>
+          <div class="card" style="border:none;box-shadow:none;padding:0">
+            <div class="card-title">已上傳卷宗</div>
+            <ul id="docList"><li class="empty-state">尚無文件</li></ul>
+            <button class="btn btn-secondary btn-sm" onclick="clearAll()" style="margin-top:12px">清除全部</button>
+          </div>
         </div>
       </div>
     </div>
