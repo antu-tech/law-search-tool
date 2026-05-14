@@ -447,7 +447,7 @@
     <nav>
       <div class="nav-item active" data-page="cases" onclick="showPage('cases')">
         <span class="nav-icon"><span class="material-icons-round">folder_open</span></span>
-        <span>卷宗搜尋</span>
+        <span>文件搜尋</span>
       </div>
       <div class="nav-item" data-page="regulations" onclick="showPage('regulations')">
         <span class="nav-icon"><span class="material-icons-round">menu_book</span></span>
@@ -478,8 +478,8 @@
     <!-- Page: Cases -->
     <div class="page active" id="page-cases">
       <div class="top-bar">
-        <h1 class="page-title">卷宗搜尋</h1>
-        <p class="page-subtitle">上傳 PDF 或 Word 卷宗，進行語意或關鍵字搜尋</p>
+        <h1 class="page-title">文件搜尋</h1>
+        <p class="page-subtitle">上傳 PDF 或 Word 文件，進行語意或關鍵字搜尋</p>
       </div>
 
       <div class="tab-bar">
@@ -709,7 +709,7 @@ function showPage(name) {
   document.querySelector('.nav-item[data-page="' + name + '"]').classList.add('active');
   // Update page title in top bar
   const titles = {
-    cases: ['卷宗搜尋','上傳 PDF 或 Word 卷宗，進行語意或關鍵字搜尋'],
+    cases: ['文件搜尋','上傳 PDF 或 Word 文件，進行語意或關鍵字搜尋'],
     regulations: ['法規查詢','全國法規資料庫（law.moj.gov.tw）11,700+ 部法規'],
     judgments: ['裁判書','司法院裁判書系統（judgment.judicial.gov.tw）'],
     constitutional: ['憲法法庭','大法官解釋（釋字）與憲判字（cons.judicial.gov.tw）'],

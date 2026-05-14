@@ -1,6 +1,6 @@
 # Antu Legal Search
 
-輕量級、可自托管的法律卷宗全文檢索與語意搜尋系統。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
+輕量級、可自托管的法律搜尋系統。整合卷宗語意檢索、全國法規、裁判書、憲法法庭與 AI 條文匹配。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
 
 ---
 
@@ -28,7 +28,7 @@ curl -fsSL https://raw.githubusercontent.com/mlpfim0502/law-search-tool/main/scr
 
 1. 點選左側「設定」
 2. 輸入你的 OpenAI / Claude / Kimi API Key
-3. 開始使用「卷宗搜尋」上傳 PDF 或 Word 文件
+3. 開始使用「文件搜尋」上傳 PDF 或 Word 文件，或使用「法規查詢」「裁判書」「憲法法庭」查詢公開資料庫
 
 > **注意**：API Key 只存在你的電腦記憶體中，不會傳送到任何第三方伺服器。
 

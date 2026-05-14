@@ -23,7 +23,7 @@ print_header() {
   echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
   echo -e "${BLUE}║                                                              ║${NC}"
   echo -e "${BLUE}║${NC}           Antu Legal Search 安裝程式                        ${BLUE}║${NC}"
-  echo -e "${BLUE}║${NC}           輕量級法律卷宗搜尋系統                              ${BLUE}║${NC}"
+  echo -e "${BLUE}║${NC}           輕量級法律搜尋系統                                  ${BLUE}║${NC}"
   echo -e "${BLUE}║                                                              ║${NC}"
   echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
   echo ""
