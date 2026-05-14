@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>卷宗搜尋系統</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
   /* Apple Design Language */
   :root {
@@ -105,10 +106,16 @@
   }
 
   .nav-icon {
-    font-size: 16px;
-    width: 20px;
+    font-size: 20px;
+    width: 24px;
     text-align: center;
-    opacity: 0.8;
+    opacity: 0.7;
+    line-height: 1;
+  }
+  .material-icons-round {
+    font-size: 20px;
+    vertical-align: middle;
+    line-height: 1;
   }
 
   .sidebar-footer {
@@ -405,29 +412,29 @@
     <div class="sidebar-header">卷宗搜尋系統</div>
     <nav>
       <div class="nav-item active" data-page="cases" onclick="showPage('cases')">
-        <span class="nav-icon">📄</span>
+        <span class="nav-icon"><span class="material-icons-round">folder_open</span></span>
         <span>卷宗搜尋</span>
       </div>
       <div class="nav-item" data-page="regulations" onclick="showPage('regulations')">
-        <span class="nav-icon">📚</span>
+        <span class="nav-icon"><span class="material-icons-round">menu_book</span></span>
         <span>法規查詢</span>
       </div>
       <div class="nav-item" data-page="judgments" onclick="showPage('judgments')">
-        <span class="nav-icon">⚖️</span>
+        <span class="nav-icon"><span class="material-icons-round">gavel</span></span>
         <span>裁判書</span>
       </div>
       <div class="nav-item" data-page="constitutional" onclick="showPage('constitutional')">
-        <span class="nav-icon">🏛️</span>
+        <span class="nav-icon"><span class="material-icons-round">account_balance</span></span>
         <span>憲法法庭</span>
       </div>
       <div class="nav-item" data-page="ai-match" onclick="showPage('ai-match')">
-        <span class="nav-icon">🔮</span>
+        <span class="nav-icon"><span class="material-icons-round">psychology</span></span>
         <span>AI 條文匹配</span>
       </div>
     </nav>
     <div class="sidebar-footer">
       <div class="nav-item" data-page="settings" onclick="showPage('settings')">
-        <span class="nav-icon">⚙️</span>
+        <span class="nav-icon"><span class="material-icons-round">settings</span></span>
         <span>設定</span>
       </div>
     </div>
@@ -444,7 +451,7 @@
       <div class="card">
         <div class="card-title">上傳卷宗</div>
         <div class="file-drop" id="dropZone">
-          <div style="font-size:28px;margin-bottom:8px">⬆️</div>
+          <div style="font-size:32px;margin-bottom:8px"><span class="material-icons-round" style="font-size:32px;color:var(--primary)">upload_file</span></div>
           <div style="font-size:15px;font-weight:500">拖曳檔案至此</div>
           <div style="font-size:13px;color:var(--text-tertiary);margin-top:4px">或 <a href="#" onclick="document.getElementById('fileInput').click();return false;" style="color:var(--primary)">點擊選擇</a> PDF / DOCX</div>
           <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none">
@@ -843,7 +850,7 @@ async function matchLegal() {
       <div>
         <span class="tag tag-blue">${escapeHtml(a.law)}</span>
         <span class="tag tag-gray">第 ${escapeHtml(a.article)} 條</span>
-        <span class="tag ${a.verified?'tag-green':'tag-orange'}">${a.verified?'✓ 已驗證':'未驗證'}</span>
+        <span class="tag ${a.verified?'tag-green':'tag-orange'}">${a.verified?'已驗證':'未驗證'}</span>
       </div>
       ${a.text?`<div style="margin-top:10px;white-space:pre-wrap;font-size:14px;color:var(--text-secondary)">${escapeHtml(a.text)}</div>`:''}
       <div style="margin-top:6px;font-size:13px;color:var(--text-secondary)">${escapeHtml(a.reason)}</div>
