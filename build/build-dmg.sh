@@ -23,6 +23,7 @@ python3 -m PyInstaller \
   --distpath "$DIST_DIR" \
   --workpath "$BUILD_DIR/work" \
   --specpath "$BUILD_DIR" \
+  --icon "$BUILD_DIR/../assets/AntuLegalSearch.icns" \
   --noconfirm \
   --clean \
   "$BUILD_DIR/mac-gui/gui.py"
