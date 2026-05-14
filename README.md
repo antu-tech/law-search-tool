@@ -1,4 +1,4 @@
-# 卷宗搜尋系統 (Law Search Tool)
+# Antu Legal Search
 
 輕量級、可自托管的法律卷宗全文檢索與語意搜尋系統。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
 
