@@ -6,6 +6,9 @@ set -e
 # =============================================================================
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/mlpfim0502/law-search-tool/main/scripts/install.sh | bash
+#
+# macOS 用戶推薦使用 .dmg 圖形介面安裝：
+#   https://github.com/mlpfim0502/law-search-tool/releases
 # =============================================================================
 
 REPO_URL="https://github.com/mlpfim0502/law-search-tool.git"

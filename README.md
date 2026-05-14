@@ -1,6 +1,6 @@
 # Antu Legal Search
 
-輕量級、可自托管的法律搜尋系統。整合卷宗語意檢索、全國法規、裁判書、憲法法庭與 AI 條文匹配。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
+輕量級、可自托管的法律搜尋系統。整合文件語意檢索、全國法規、裁判書、憲法法庭與 AI 條文匹配。律師客戶自行提供 OpenAI / Claude API Key，資料完全在地。
 
 ---
 
@@ -14,7 +14,14 @@
 
 安裝後開啟 Docker Desktop，確保左下角顯示綠燈（Engine running）。
 
-### 一鍵安裝
+### 方法 A：macOS 圖形介面安裝（推薦）
+
+1. 下載 `Antu-Legal-Search-macOS.dmg`
+2. 雙擊掛載 .dmg，將 **Antu Legal Search** 拖曳到 Applications 資料夾
+3. 從 Launchpad 開啟 **Antu Legal Search**
+4. 點選「啟動服務」，等待完成後點選「開啟瀏覽器」
+
+### 方法 B：終端機一鍵安裝
 
 開啟終端機（Terminal / 命令提示字元），貼上這一行：
 
@@ -32,7 +39,9 @@ curl -fsSL https://raw.githubusercontent.com/mlpfim0502/law-search-tool/main/scr
 
 > **注意**：API Key 只存在你的電腦記憶體中，不會傳送到任何第三方伺服器。
 
-### 日常操作
+### 日常操作（終端機版）
+
+若使用方法 B 安裝，日常指令如下：
 
 | 指令 | 說明 |
 |------|------|
@@ -63,6 +72,15 @@ uvicorn src.api.main:app --reload
 ```bash
 docker-compose up --build
 ```
+
+### 打包 macOS .dmg
+
+```bash
+cd build
+./build-dmg.sh
+```
+
+輸出位於 `build/dist/Antu-Legal-Search-macOS.dmg`。
 
 ---
 
