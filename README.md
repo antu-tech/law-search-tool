@@ -19,6 +19,9 @@
 1. 下載 `Antu-Legal-Search-macOS.dmg`
 2. 雙擊掛載 .dmg，將 **Antu Legal Search** 拖曳到 Applications 資料夾
 3. 從 Launchpad 開啟 **Antu Legal Search**
+
+> **macOS 安全性提示**：首次開啟時若出現「無法驗證是否包含惡意軟體」，這是 Gatekeeper 的正常提示（本專案為開源軟體，尚未申請 Apple 開發者簽章）。請前往「系統設定」→「隱私權與安全性」→向下捲動點擊「仍要開啟」。原始碼公開於 GitHub，可自由稽核。
+
 4. 點選「啟動服務」，等待完成後點選「開啟瀏覽器」
 
 ### 方法 B：終端機一鍵安裝
