@@ -26,7 +26,7 @@
 開啟終端機（Terminal / 命令提示字元），貼上這一行：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mlpfim0502/law-search-tool/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/antu-tech/law-search-tool/main/scripts/install.sh | bash
 ```
 
 安裝完成後，開啟瀏覽器訪問 **http://localhost:8000**。
@@ -58,7 +58,7 @@ curl -fsSL https://raw.githubusercontent.com/mlpfim0502/law-search-tool/main/scr
 ### 本地開發
 
 ```bash
-git clone https://github.com/mlpfim0502/law-search-tool.git
+git clone https://github.com/antu-tech/law-search-tool.git
 cd law-search-tool
 python -m venv .venv
 source .venv/bin/activate

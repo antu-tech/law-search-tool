@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 
 APP_DIR = os.path.expanduser("~/antu-legal-search")
-REPO_URL = "https://github.com/mlpfim0502/law-search-tool.git"
+REPO_URL = "https://github.com/antu-tech/law-search-tool.git"
 PORT = 8000
 DOCKER_DOWNLOAD_URL = "https://www.docker.com/products/docker-desktop"
 
