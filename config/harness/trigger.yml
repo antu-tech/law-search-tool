@@ -1,0 +1,27 @@
+trigger:
+  name: law-search-tool-push-trigger
+  identifier: lawsearchtoolpushtrigger
+  enabled: true
+  description: Trigger CI/CD pipeline on push to main branch
+  orgIdentifier: default
+  projectIdentifier: default
+  pipelineIdentifier: lawsearchtoolci
+  source:
+    type: Webhook
+    spec:
+      type: Custom
+      spec:
+        payloadConditions:
+          - key: push.changes.0.new.name
+            operator: Equals
+            value: main
+        headerConditions: []
+        repoName: law-search-tool
+        actions: []
+  inputYaml: |
+    pipeline:
+      identifier: lawsearchtoolci
+      variables:
+        - name: DOCKER_REGISTRY
+          type: String
+          value: docker.io/mlpfim

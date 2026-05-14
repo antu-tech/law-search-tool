@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  law-search:
+    build: .
+    container_name: law-search-tool
+    ports:
+      - "${LAW_SEARCH_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - SQLITE_PATH=/app/data/law_search.db
+      - UPLOAD_DIR=/app/uploads
+      - KIMI_BASE_URL=https://api.moonshot.cn/v1
+    restart: unless-stopped
+    networks:
+      - law-search-net
+
+networks:
+  law-search-net:
+    driver: bridge

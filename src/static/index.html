@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卷宗搜尋系統</title>
+<style>
+  :root { --bg:#f5f6fa; --card:#fff; --primary:#2f3542; --accent:#3742fa; }
+  * { box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif; background:var(--bg); margin:0; padding:24px; color:var(--primary); }
+  .container { max-width:900px; margin:0 auto; }
+  h1 { font-size:1.5rem; margin-bottom:16px; }
+  .card { background:var(--card); border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  label { display:block; font-size:.875rem; margin-bottom:6px; font-weight:600; }
+  input[type="text"], input[type="password"], select { width:100%; padding:10px 12px; border:1px solid #dcdde1; border-radius:8px; font-size:1rem; }
+  button { background:var(--accent); color:#fff; border:none; padding:10px 18px; border-radius:8px; font-size:1rem; cursor:pointer; }
+  button:hover { opacity:.9; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+  .row > * { flex:1 1 200px; }
+  .results { margin-top:12px; }
+  .result-item { border-bottom:1px solid #eee; padding:12px 0; }
+  .result-item:last-child { border:none; }
+  .meta { font-size:.75rem; color:#747d8c; margin-top:4px; }
+  .tag { display:inline-block; background:#e8e9ff; color:var(--accent); padding:2px 8px; border-radius:4px; font-size:.75rem; margin-right:6px; }
+  .empty { color:#747d8c; font-size:.875rem; }
+  .file-drop { border:2px dashed #dcdde1; border-radius:8px; padding:24px; text-align:center; color:#747d8c; cursor:pointer; }
+  .file-drop.dragover { border-color:var(--accent); background:#f0f1ff; }
+  #docList { list-style:none; padding:0; }
+  #docList li { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f2f6; }
+  .danger { background:#ff4757; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>卷宗搜尋系統</h1>
+
+  <div class="card">
+    <label for="apiKey">Kimi API Key</label>
+    <input type="password" id="apiKey" placeholder="sk-...">
+    <p class="meta">您的 API Key 僅用於本次請求，不會儲存在伺服器。</p>
+  </div>
+
+  <div class="card">
+    <label>上傳卷宗 (PDF / DOCX)</label>
+    <div class="file-drop" id="dropZone">
+      <div>拖曳檔案至此，或 <input type="file" id="fileInput" accept=".pdf,.docx" style="display:none"><a href="#" onclick="document.getElementById('fileInput').click();return false;">點擊選擇</a></div>
+      <div class="meta" id="uploadStatus"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div style="flex:3">
+        <label for="query">搜尋卷宗</label>
+        <input type="text" id="query" placeholder="輸入關鍵字或法律問題...">
+      </div>
+      <div style="flex:1">
+        <label for="mode">模式</label>
+        <select id="mode">
+          <option value="semantic">語意搜尋</option>
+          <option value="keyword">關鍵字</option>
+          <option value="hybrid">混合</option>
+        </select>
+      </div>
+      <div style="flex:0">
+        <button onclick="doSearch()">搜尋</button>
+      </div>
+    </div>
+    <div id="searchResults" class="results"></div>
+  </div>
+
+  <div class="card">
+    <button onclick="matchLegal()">法律條文匹配</button>
+    <div id="legalResults" class="results"></div>
+  </div>
+
+  <div class="card">
+    <label>已上傳卷宗</label>
+    <ul id="docList"><li class="empty">尚無文件</li></ul>
+    <button class="danger" onclick="clearAll()">清除全部</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const apiKey = () => $('apiKey').value.trim();
+const setStatus = (id, msg, err=false) => $(id).innerHTML = `<span style="color:${err?'#ff4757':'#2ed573'}">${msg}</span>`;
+
+$('fileInput').addEventListener('change', e => upload(e.target.files[0]));
+
+const dz = $('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  if(e.dataTransfer.files.length) upload(e.dataTransfer.files[0]);
+});
+
+async function upload(file) {
+  if(!file) return;
+  if(!apiKey()) { alert('請先輸入 Kimi API Key'); return; }
+  setStatus('uploadStatus', '上傳中...');
+  const fd = new FormData(); fd.append('file', file);
+  try {
+    const r = await fetch('/api/documents', { method:'POST', headers:{'X-Kimi-Api-Key':apiKey()}, body:fd });
+    const j = await r.json();
+    if(!r.ok) throw new Error(j.detail || '上傳失敗');
+    setStatus('uploadStatus', `已索引：${j.title}（${j.chunks} 段落）`);
+    loadDocs();
+  } catch(e) { setStatus('uploadStatus', e.message, true); }
+}
+
+async function loadDocs() {
+  const r = await fetch('/api/documents');
+  const docs = await r.json();
+  const ul = $('docList');
+  if(!docs.length) { ul.innerHTML='<li class="empty">尚無文件</li>'; return; }
+  ul.innerHTML = docs.map(d => `<li><span>${d.title}</span><button class="danger" style="padding:4px 10px;font-size:.75rem;" onclick="delDoc('${d.id}')">刪除</button></li>`).join('');
+}
+
+async function delDoc(id) {
+  await fetch(`/api/documents/${id}`, {method:'DELETE'});
+  loadDocs();
+}
+
+async function clearAll() {
+  const r = await fetch('/api/documents');
+  const docs = await r.json();
+  for(const d of docs) await fetch(`/api/documents/${d.id}`, {method:'DELETE'});
+  loadDocs();
+}
+
+async function doSearch() {
+  const q = $('query').value.trim();
+  if(!q) return;
+  const mode = $('mode').value;
+  const resDiv = $('searchResults');
+  resDiv.innerHTML = '搜尋中...';
+  const headers = mode==='keyword' ? {} : {'X-Kimi-Api-Key': apiKey()};
+  const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&top_k=5`, {headers});
+  const j = await r.json();
+  if(!j.results || !j.results.length) { resDiv.innerHTML='<div class="empty">無結果</div>'; return; }
+  resDiv.innerHTML = j.results.map(x => `<div class="result-item">
+    <div><span class="tag">${x.title}</span> <span class="tag">分數 ${x.score}</span></div>
+    <div style="margin-top:6px;white-space:pre-wrap;">${escapeHtml(x.text)}</div>
+    ${x.page_start?`<div class="meta">頁碼: ${x.page_start}${x.page_end!==x.page_start?'-'+x.page_end:''}</div>`:''}
+  </div>`).join('');
+}
+
+async function matchLegal() {
+  const q = $('query').value.trim();
+  if(!q) return;
+  if(!apiKey()) { alert('請先輸入 Kimi API Key'); return; }
+  const div = $('legalResults'); div.innerHTML='分析中...';
+  const r = await fetch(`/api/legal-articles?q=${encodeURIComponent(q)}`, {headers:{'X-Kimi-Api-Key': apiKey()}});
+  const j = await r.json();
+  if(!j.articles || !j.articles.length) { div.innerHTML='<div class="empty">無匹配條文</div>'; return; }
+  div.innerHTML = j.articles.map(a => `<div class="result-item">
+    <div><span class="tag">${a.law}</span> <span class="tag">第 ${a.article} 條</span></div>
+    <div style="margin-top:6px;">${escapeHtml(a.reason)}</div>
+  </div>`).join('');
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
+}
+
+loadDocs();
+</script>
+</body>
+</html>

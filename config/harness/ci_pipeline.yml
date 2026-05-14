@@ -1,0 +1,60 @@
+pipeline:
+  name: law-search-tool-ci
+  identifier: lawsearchtoolci
+  projectIdentifier: default
+  orgIdentifier: default
+  description: CI pipeline for law-search-tool — test, build, and push Docker image on every push to Bitbucket.
+  tags: {}
+  stages:
+    - stage:
+        name: Build and Test
+        identifier: BuildAndTest
+        description: Run pytest and build Docker image
+        type: CI
+        spec:
+          cloneCodebase: true
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Install Dependencies
+                  identifier: InstallDeps
+                  spec:
+                    shell: Bash
+                    command: |
+                      pip install -r requirements.txt
+                    image: python:3.11-slim
+              - step:
+                  type: Run
+                  name: Run Tests
+                  identifier: RunTests
+                  spec:
+                    shell: Bash
+                    command: |
+                      pytest tests/ -v --tb=short
+                    image: python:3.11-slim
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push Image
+                  identifier: BuildPushImage
+                  spec:
+                    connectorRef: account.harnessImage
+                    repo: <+pipeline.variables.DOCKER_REGISTRY>/law-search-tool
+                    tags:
+                      - <+pipeline.sequenceId>
+                      - latest
+                    dockerfile: Dockerfile
+                    context: .
+                    optimize: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: account.harnessk8s
+              namespace: harness-delegate-ng
+              automountServiceAccountToken: true
+              os: Linux
+        variables:
+          - name: DOCKER_REGISTRY
+            type: String
+            description: "e.g. docker.io/username"
+            value: <+input>

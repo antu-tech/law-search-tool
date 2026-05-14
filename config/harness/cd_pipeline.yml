@@ -1,0 +1,85 @@
+pipeline:
+  name: law-search-tool-cd
+  identifier: lawsearchtoolcd
+  projectIdentifier: default
+  orgIdentifier: default
+  description: CD pipeline for law-search-tool — deploy the Docker image to the target environment.
+  tags: {}
+  stages:
+    - stage:
+        name: Deploy to Docker
+        identifier: DeployDocker
+        description: Deploy law-search-tool container via SSH or Docker Compose on the target host.
+        type: Deployment
+        spec:
+          deploymentType: CustomDeployment
+          customDeploymentRef:
+            templateRef: CustomDeployment
+            versionLabel: "1"
+          service:
+            serviceRef: lawsearchtool
+          environment:
+            environmentRef: dev
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: dockerhost
+          execution:
+            steps:
+              - step:
+                  type: ShellScript
+                  name: Pull and Restart
+                  identifier: PullAndRestart
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          #!/bin/bash
+                          set -e
+                          IMAGE="<+pipeline.variables.DOCKER_REGISTRY>/law-search-tool:<+pipeline.variables.IMAGE_TAG>"
+                          echo "Deploying $IMAGE ..."
+                          
+                          # Option A: Docker Compose on the host (recommended for self-hosted)
+                          ssh -o StrictHostKeyChecking=no \
+                              -i <+secrets.getValue("docker_host_ssh_key")> \
+                              <+pipeline.variables.DOCKER_HOST_USER>@<+pipeline.variables.DOCKER_HOST> \
+                              "cd /opt/law-search-tool && \
+                               docker pull $IMAGE && \
+                               docker-compose down && \
+                               export LAW_SEARCH_IMAGE=$IMAGE && \
+                               docker-compose up -d"
+                          
+                          # Option B: If Harness and app share the same Docker daemon
+                          # docker pull $IMAGE
+                          # docker-compose -f /opt/law-search-tool/docker-compose.yml up -d
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: StageRollback
+            rollbackSteps: []
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
+        variables:
+          - name: DOCKER_REGISTRY
+            type: String
+            value: <+input>
+          - name: IMAGE_TAG
+            type: String
+            value: latest
+          - name: DOCKER_HOST
+            type: String
+            value: <+input>
+          - name: DOCKER_HOST_USER
+            type: String
+            value: ubuntu
