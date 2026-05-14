@@ -41,9 +41,6 @@ docker-compose up --build
 | GET  | `/api/search?q=...&mode=semantic` | 搜尋（semantic/keyword/hybrid）|
 | GET  | `/api/legal-articles?q=...` | AI 法律條文匹配 |
 
-## Harness.io 整合
-參見 [docs/harness_integration.md](docs/harness_integration.md)。
-
 ## 開發
 ```bash
 python -m venv .venv
